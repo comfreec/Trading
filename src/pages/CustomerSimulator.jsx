@@ -494,9 +494,9 @@ function CustomerSimulator() {
     }
   }
 
-  const toggleVoiceInput = () => {
+  const toggleVoiceInput = async () => {
     if (!recognition) {
-      alert('이 브라우저는 음성 인식을 지원하지 않습니다. Chrome 브라우저를 사용해주세요.')
+      alert('이 브라우저는 음성 인식을 지원하지 않습니다. Chrome 또는 Safari 브라우저를 사용해주세요.')
       return
     }
 
@@ -504,9 +504,22 @@ function CustomerSimulator() {
       recognition.stop()
       setIsListening(false)
     } else {
-      setUserInput('')
-      recognition.start()
-      setIsListening(true)
+      try {
+        // 마이크 권한 먼저 요청
+        await navigator.mediaDevices.getUserMedia({ audio: true })
+        setUserInput('')
+        recognition.start()
+        setIsListening(true)
+      } catch (error) {
+        console.error('Microphone permission error:', error)
+        if (error.name === 'NotAllowedError') {
+          alert('마이크 권한이 거부되었습니다.\n\n브라우저 설정에서 마이크 권한을 허용해주세요:\n1. 주소창 왼쪽의 자물쇠 아이콘 클릭\n2. 마이크 권한 허용')
+        } else if (error.name === 'NotFoundError') {
+          alert('마이크를 찾을 수 없습니다. 기기에 마이크가 연결되어 있는지 확인해주세요.')
+        } else {
+          alert('마이크 접근 중 오류가 발생했습니다. 다시 시도해주세요.')
+        }
+      }
     }
   }
 
