@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useRef, useCallback } from 'react'
 import { ResponseEngine } from '../data/responseEngine'
 import { SalesCoach } from '../data/salesCoach'
 import { MissionTracker } from '../data/missionSystem'
@@ -35,6 +35,18 @@ function CustomerSimulator() {
   const [availableVoices, setAvailableVoices] = useState([])
   const [handsFreeMode, setHandsFreeMode] = useState(false)
   const [isWaitingForSpeech, setIsWaitingForSpeech] = useState(false)
+  
+  // Ref로 최신 상태 유지
+  const handsFreeRef = useRef(handsFreeMode)
+  const userInputRef = useRef('')
+  
+  React.useEffect(() => {
+    handsFreeRef.current = handsFreeMode
+  }, [handsFreeMode])
+  
+  React.useEffect(() => {
+    userInputRef.current = userInput
+  }, [userInput])
 
   // 음성 인식 초기화
   React.useEffect(() => {
@@ -68,6 +80,7 @@ function CustomerSimulator() {
         
         console.log('인식된 텍스트:', transcript)
         setUserInput(transcript)
+        userInputRef.current = transcript
         
         if (event.results[event.results.length - 1].isFinal) {
           console.log('✅ 최종 결과 확정')
@@ -82,6 +95,20 @@ function CustomerSimulator() {
         
         switch(event.error) {
           case 'no-speech':
+            // 핸즈프리 모드에서는 조용히 다시 시작
+            if (handsFreeRef.current) {
+              console.log('음성 없음 - 다시 시도')
+              setTimeout(() => {
+                if (handsFreeRef.current && !isSpeaking) {
+                  try {
+                    recognitionInstance.start()
+                  } catch (e) {
+                    console.log('재시작 실패:', e)
+                  }
+                }
+              }, 1000)
+              return
+            }
             errorMessage = '음성이 감지되지 않았습니다.\n\n조용한 곳에서 다시 시도해주세요.'
             break
           case 'audio-capture':
@@ -111,6 +138,16 @@ function CustomerSimulator() {
       recognitionInstance.onend = () => {
         console.log('🛑 음성 인식 종료됨')
         setIsListening(false)
+        
+        // 핸즈프리 모드에서 텍스트가 있으면 자동 전송
+        if (handsFreeRef.current && userInputRef.current && userInputRef.current.trim()) {
+          console.log('핸즈프리: 자동 전송 -', userInputRef.current)
+          setTimeout(() => {
+            // 버튼 클릭 이벤트 트리거
+            const btn = document.querySelector('.send-btn-hidden')
+            if (btn) btn.click()
+          }, 300)
+        }
       }
       
       setRecognition(recognitionInstance)
@@ -118,7 +155,7 @@ function CustomerSimulator() {
     } catch (error) {
       console.error('❌ 음성 인식 초기화 실패:', error)
     }
-  }, [])
+  }, [handsFreeMode])
 
   // TTS 음성 초기화
   React.useEffect(() => {
@@ -954,6 +991,8 @@ function CustomerSimulator() {
                     <p>✅ 대화 준비 완료</p>
                   )}
                 </div>
+                {/* 숨겨진 전송 버튼 - 자동 전송용 */}
+                <button onClick={handleSendMessage} className="send-btn-hidden" style={{display: 'none'}}>전송</button>
               </div>
             )}
           </div>
