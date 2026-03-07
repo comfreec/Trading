@@ -39,6 +39,7 @@ function CustomerSimulator() {
   // Ref로 최신 상태 유지
   const handsFreeRef = useRef(handsFreeMode)
   const userInputRef = useRef('')
+  const handleSendRef = useRef(null)
   
   React.useEffect(() => {
     handsFreeRef.current = handsFreeMode
@@ -140,13 +141,15 @@ function CustomerSimulator() {
         setIsListening(false)
         
         // 핸즈프리 모드에서 텍스트가 있으면 자동 전송
-        if (handsFreeRef.current && userInputRef.current && userInputRef.current.trim()) {
-          console.log('핸즈프리: 자동 전송 -', userInputRef.current)
+        const currentInput = userInputRef.current
+        if (handsFreeRef.current && currentInput && currentInput.trim()) {
+          console.log('핸즈프리: 자동 전송 -', currentInput)
           setTimeout(() => {
-            // 버튼 클릭 이벤트 트리거
-            const btn = document.querySelector('.send-btn-hidden')
-            if (btn) btn.click()
-          }, 300)
+            if (handleSendRef.current) {
+              console.log('핸즈프리: handleSend 호출')
+              handleSendRef.current()
+            }
+          }, 500)
         }
       }
       
@@ -381,6 +384,8 @@ function CustomerSimulator() {
   const handleSendMessage = () => {
     if (!userInput.trim() || !responseEngine) return
 
+    console.log('📤 메시지 전송:', userInput)
+
     const newConversation = [
       ...conversation,
       { speaker: 'agent', text: userInput }
@@ -465,6 +470,11 @@ function CustomerSimulator() {
     setUserInput('')
     setIsWaitingForSpeech(false)
   }
+  
+  // handleSendMessage를 ref에 저장
+  React.useEffect(() => {
+    handleSendRef.current = handleSendMessage
+  })
 
   const resetSimulation = () => {
     stopSpeaking() // 음성 중지
