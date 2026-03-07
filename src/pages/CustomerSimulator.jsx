@@ -29,6 +29,10 @@ function CustomerSimulator() {
   const [activeMissions, setActiveMissions] = useState([])
   const [completedMissionsInSession, setCompletedMissionsInSession] = useState([])
   const [expGained, setExpGained] = useState(0)
+  const [voiceEnabled, setVoiceEnabled] = useState(true)
+  const [isSpeaking, setIsSpeaking] = useState(false)
+  const [selectedVoice, setSelectedVoice] = useState(null)
+  const [availableVoices, setAvailableVoices] = useState([])
 
   // 음성 인식 초기화
   React.useEffect(() => {
@@ -114,6 +118,75 @@ function CustomerSimulator() {
     }
   }, [])
 
+  // TTS 음성 초기화
+  React.useEffect(() => {
+    const loadVoices = () => {
+      const voices = window.speechSynthesis.getVoices()
+      const koreanVoices = voices.filter(voice => voice.lang.startsWith('ko'))
+      
+      console.log('사용 가능한 한국어 음성:', koreanVoices)
+      setAvailableVoices(koreanVoices)
+      
+      // 기본 음성 선택 (여성 음성 우선)
+      const femaleVoice = koreanVoices.find(v => 
+        v.name.includes('Female') || 
+        v.name.includes('여성') || 
+        v.name.includes('Yuna') ||
+        v.name.includes('Heami')
+      )
+      setSelectedVoice(femaleVoice || koreanVoices[0] || null)
+    }
+
+    loadVoices()
+    
+    // 일부 브라우저는 비동기로 음성을 로드함
+    if (window.speechSynthesis.onvoiceschanged !== undefined) {
+      window.speechSynthesis.onvoiceschanged = loadVoices
+    }
+  }, [])
+
+  // 음성 출력 함수
+  const speakText = (text) => {
+    if (!voiceEnabled || !text) return
+
+    // 이전 음성 중지
+    window.speechSynthesis.cancel()
+
+    const utterance = new SpeechSynthesisUtterance(text)
+    
+    // 음성 설정
+    if (selectedVoice) {
+      utterance.voice = selectedVoice
+    }
+    utterance.lang = 'ko-KR'
+    utterance.rate = 1.0 // 속도 (0.1 ~ 10)
+    utterance.pitch = 1.0 // 음높이 (0 ~ 2)
+    utterance.volume = 1.0 // 볼륨 (0 ~ 1)
+
+    utterance.onstart = () => {
+      console.log('🔊 음성 출력 시작')
+      setIsSpeaking(true)
+    }
+
+    utterance.onend = () => {
+      console.log('🔇 음성 출력 종료')
+      setIsSpeaking(false)
+    }
+
+    utterance.onerror = (event) => {
+      console.error('음성 출력 오류:', event)
+      setIsSpeaking(false)
+    }
+
+    window.speechSynthesis.speak(utterance)
+  }
+
+  // 음성 중지 함수
+  const stopSpeaking = () => {
+    window.speechSynthesis.cancel()
+    setIsSpeaking(false)
+  }
+
   const customerTypes = [
     {
       id: 1,
@@ -170,6 +243,10 @@ function CustomerSimulator() {
     setConversation([
       { speaker: 'customer', text: greeting }
     ])
+    
+    // 음성으로 인사
+    setTimeout(() => speakText(greeting), 500)
+    
     setConversationState({
       stage: 'initial',
       mentionedTopics: [],
@@ -217,6 +294,9 @@ function CustomerSimulator() {
     })
 
     setConversation(newConversation)
+    
+    // 고객 응답을 음성으로 출력
+    setTimeout(() => speakText(customerResponse), 300)
     
     const newState = {
       stage: responseEngine.sentiment,
@@ -266,6 +346,7 @@ function CustomerSimulator() {
   }
 
   const resetSimulation = () => {
+    stopSpeaking() // 음성 중지
     setSelectedCustomer(null)
     setConversation([])
     setConversationState({
@@ -290,6 +371,8 @@ function CustomerSimulator() {
   }
 
   const endConversation = () => {
+    stopSpeaking() // 음성 중지
+    
     if (evaluations.length === 0) {
       alert('대화를 먼저 시작해주세요!')
       return
@@ -558,6 +641,18 @@ function CustomerSimulator() {
               </div>
             </div>
             <div className="simulation-actions">
+              <button 
+                onClick={() => setVoiceEnabled(!voiceEnabled)} 
+                className={`voice-toggle-btn ${voiceEnabled ? 'active' : ''}`}
+                title="고객 음성 응답"
+              >
+                {voiceEnabled ? '🔊 음성 켜짐' : '🔇 음성 꺼짐'}
+              </button>
+              {isSpeaking && (
+                <button onClick={stopSpeaking} className="stop-speaking-btn">
+                  ⏹️ 음성 중지
+                </button>
+              )}
               <button onClick={() => setShowTips(!showTips)} className="tips-btn">
                 💡 {showTips ? '팁 숨기기' : '팁 보기'}
               </button>
@@ -581,6 +676,26 @@ function CustomerSimulator() {
                   <li key={index}>{tip}</li>
                 ))}
               </ul>
+            </div>
+          )}
+
+          {voiceEnabled && availableVoices.length > 0 && (
+            <div className="voice-settings">
+              <span>🎙️ 고객 음성:</span>
+              <select 
+                value={selectedVoice?.name || ''} 
+                onChange={(e) => {
+                  const voice = availableVoices.find(v => v.name === e.target.value)
+                  setSelectedVoice(voice)
+                }}
+                className="voice-select"
+              >
+                {availableVoices.map(voice => (
+                  <option key={voice.name} value={voice.name}>
+                    {voice.name}
+                  </option>
+                ))}
+              </select>
             </div>
           )}
 
