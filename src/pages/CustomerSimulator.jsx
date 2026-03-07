@@ -567,14 +567,36 @@ function CustomerSimulator() {
         console.error('Microphone permission error:', error)
         setIsListening(false)
         
+        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent)
+        const isAndroid = /Android/.test(navigator.userAgent)
+        
         if (error.name === 'NotAllowedError' || error.name === 'PermissionDeniedError') {
-          alert('마이크 권한이 필요합니다.\n\n설정 방법:\n1. 브라우저 주소창의 자물쇠/정보 아이콘 클릭\n2. 사이트 설정 또는 권한 클릭\n3. 마이크 권한 허용')
+          let permissionGuide = '마이크 권한이 필요합니다.\n\n'
+          
+          if (isIOS) {
+            permissionGuide += '📱 iOS 설정 방법:\n'
+            permissionGuide += '1. 설정 앱 열기\n'
+            permissionGuide += '2. Safari 선택\n'
+            permissionGuide += '3. 마이크 권한 허용\n'
+            permissionGuide += '4. Safari 완전히 종료 후 다시 열기'
+          } else if (isAndroid) {
+            permissionGuide += '📱 Android 설정 방법:\n'
+            permissionGuide += '1. 주소창 왼쪽 아이콘 터치\n'
+            permissionGuide += '2. 권한 또는 사이트 설정 선택\n'
+            permissionGuide += '3. 마이크 권한 허용\n'
+            permissionGuide += '또는\n'
+            permissionGuide += '설정 > 앱 > Chrome > 권한 > 마이크 허용'
+          } else {
+            permissionGuide += '브라우저 설정에서 마이크 권한을 허용해주세요.'
+          }
+          
+          alert(permissionGuide)
         } else if (error.name === 'NotFoundError') {
           alert('마이크를 찾을 수 없습니다.\n\n기기에 마이크가 있는지 확인해주세요.')
         } else if (error.name === 'NotSupportedError') {
           alert('HTTPS 연결이 필요합니다.\n\n현재 URL이 https://로 시작하는지 확인해주세요.')
         } else {
-          alert(`마이크 접근 오류: ${error.name}\n\n다시 시도해주세요.`)
+          alert(`마이크 접근 오류: ${error.name}\n\n브라우저를 완전히 종료하고 다시 시도해주세요.`)
         }
       }
     }
