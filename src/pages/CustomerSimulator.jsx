@@ -532,6 +532,14 @@ function CustomerSimulator() {
     handleSendRef.current = handleSendMessage
   })
 
+  // 대화 추가 시 자동 스크롤
+  React.useEffect(() => {
+    const conversationArea = document.querySelector('.conversation-area')
+    if (conversationArea) {
+      conversationArea.scrollTop = conversationArea.scrollHeight
+    }
+  }, [conversation])
+
   const resetSimulation = () => {
     stopSpeaking() // 음성 중지
     setHandsFreeMode(false)
