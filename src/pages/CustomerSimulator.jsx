@@ -33,6 +33,8 @@ function CustomerSimulator() {
   const [isSpeaking, setIsSpeaking] = useState(false)
   const [selectedVoice, setSelectedVoice] = useState(null)
   const [availableVoices, setAvailableVoices] = useState([])
+  const [handsFreeMode, setHandsFreeMode] = useState(false)
+  const [isWaitingForSpeech, setIsWaitingForSpeech] = useState(false)
 
   // 음성 인식 초기화
   React.useEffect(() => {
@@ -146,8 +148,11 @@ function CustomerSimulator() {
   }, [])
 
   // 음성 출력 함수
-  const speakText = (text) => {
-    if (!voiceEnabled || !text) return
+  const speakText = (text, onEndCallback) => {
+    if (!voiceEnabled || !text) {
+      if (onEndCallback) onEndCallback()
+      return
+    }
 
     // 이전 음성 중지
     window.speechSynthesis.cancel()
@@ -171,11 +176,15 @@ function CustomerSimulator() {
     utterance.onend = () => {
       console.log('🔇 음성 출력 종료')
       setIsSpeaking(false)
+      if (onEndCallback) {
+        setTimeout(onEndCallback, 500) // 0.5초 후 콜백 실행
+      }
     }
 
     utterance.onerror = (event) => {
       console.error('음성 출력 오류:', event)
       setIsSpeaking(false)
+      if (onEndCallback) onEndCallback()
     }
 
     window.speechSynthesis.speak(utterance)
@@ -185,6 +194,46 @@ function CustomerSimulator() {
   const stopSpeaking = () => {
     window.speechSynthesis.cancel()
     setIsSpeaking(false)
+  }
+
+  // 핸즈프리 모드: 음성 인식 자동 시작
+  const startAutoListening = () => {
+    if (!recognition || !handsFreeMode) return
+    
+    setIsWaitingForSpeech(true)
+    
+    setTimeout(() => {
+      if (!isListening && handsFreeMode) {
+        try {
+          recognition.start()
+          console.log('🎤 핸즈프리: 자동 음성 인식 시작')
+        } catch (error) {
+          console.error('자동 음성 인식 시작 실패:', error)
+          setIsWaitingForSpeech(false)
+        }
+      }
+    }, 500)
+  }
+
+  // 핸즈프리 모드 토글
+  const toggleHandsFreeMode = () => {
+    const newMode = !handsFreeMode
+    setHandsFreeMode(newMode)
+    
+    if (newMode) {
+      setVoiceEnabled(true) // 음성 자동 활성화
+      alert('🎙️ 핸즈프리 모드 활성화!\n\n고객이 말을 끝내면 자동으로 당신 차례가 됩니다.\n말을 마치면 자동으로 고객이 응답합니다.\n\n편하게 대화하세요!')
+      
+      // 대화 중이면 바로 음성 인식 시작
+      if (conversation.length > 0) {
+        startAutoListening()
+      }
+    } else {
+      setIsWaitingForSpeech(false)
+      if (isListening && recognition) {
+        recognition.stop()
+      }
+    }
   }
 
   const customerTypes = [
@@ -244,8 +293,14 @@ function CustomerSimulator() {
       { speaker: 'customer', text: greeting }
     ])
     
-    // 음성으로 인사
-    setTimeout(() => speakText(greeting), 500)
+    // 음성으로 인사 후 핸즈프리면 자동으로 음성 인식 시작
+    setTimeout(() => {
+      speakText(greeting, () => {
+        if (handsFreeMode) {
+          startAutoListening()
+        }
+      })
+    }, 500)
     
     setConversationState({
       stage: 'initial',
@@ -295,8 +350,14 @@ function CustomerSimulator() {
 
     setConversation(newConversation)
     
-    // 고객 응답을 음성으로 출력
-    setTimeout(() => speakText(customerResponse), 300)
+    // 고객 응답을 음성으로 출력 후 핸즈프리면 자동으로 다음 음성 인식
+    setTimeout(() => {
+      speakText(customerResponse, () => {
+        if (handsFreeMode) {
+          startAutoListening()
+        }
+      })
+    }, 300)
     
     const newState = {
       stage: responseEngine.sentiment,
@@ -343,10 +404,13 @@ function CustomerSimulator() {
     missionTracker.updateDailyStats(evaluation.totalScore)
     
     setUserInput('')
+    setIsWaitingForSpeech(false)
   }
 
   const resetSimulation = () => {
     stopSpeaking() // 음성 중지
+    setHandsFreeMode(false)
+    setIsWaitingForSpeech(false)
     setSelectedCustomer(null)
     setConversation([])
     setConversationState({
@@ -372,6 +436,13 @@ function CustomerSimulator() {
 
   const endConversation = () => {
     stopSpeaking() // 음성 중지
+    setHandsFreeMode(false)
+    setIsWaitingForSpeech(false)
+    
+    if (isListening && recognition) {
+      recognition.stop()
+      setIsListening(false)
+    }
     
     if (evaluations.length === 0) {
       alert('대화를 먼저 시작해주세요!')
@@ -642,6 +713,13 @@ function CustomerSimulator() {
             </div>
             <div className="simulation-actions">
               <button 
+                onClick={toggleHandsFreeMode}
+                className={`handsfree-btn ${handsFreeMode ? 'active' : ''}`}
+                title="핸즈프리 모드 - 자동 대화"
+              >
+                {handsFreeMode ? '🤖 핸즈프리 ON' : '🎙️ 핸즈프리 OFF'}
+              </button>
+              <button 
                 onClick={() => setVoiceEnabled(!voiceEnabled)} 
                 className={`voice-toggle-btn ${voiceEnabled ? 'active' : ''}`}
                 title="고객 음성 응답"
@@ -696,6 +774,23 @@ function CustomerSimulator() {
                   </option>
                 ))}
               </select>
+            </div>
+          )}
+
+          {handsFreeMode && (
+            <div className="handsfree-status">
+              <div className="status-indicator">
+                {isSpeaking ? (
+                  <span className="status-speaking">🔊 고객이 말하는 중...</span>
+                ) : isWaitingForSpeech ? (
+                  <span className="status-waiting">⏳ 음성 인식 준비 중...</span>
+                ) : isListening ? (
+                  <span className="status-listening">🎤 당신 차례입니다. 말씀하세요!</span>
+                ) : (
+                  <span className="status-ready">✅ 준비됨</span>
+                )}
+              </div>
+              <p className="handsfree-tip">💡 핸즈프리 모드: 버튼 없이 자연스럽게 대화하세요</p>
             </div>
           )}
 
@@ -782,24 +877,58 @@ function CustomerSimulator() {
           )}
 
           <div className="input-area">
-            <button 
-              onClick={toggleVoiceInput} 
-              className={`voice-btn ${isListening ? 'listening' : ''}`}
-              title="음성 입력"
-            >
-              {isListening ? '🎤' : '🎙️'}
-            </button>
-            <input
-              type="text"
-              value={userInput}
-              onChange={(e) => setUserInput(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
-              placeholder={isListening ? "듣고 있습니다..." : "고객에게 할 말을 입력하거나 음성으로 말하세요..."}
-              disabled={isListening}
-            />
-            <button onClick={handleSendMessage} className="send-btn" disabled={isListening}>
-              전송
-            </button>
+            {!handsFreeMode && (
+              <>
+                <button 
+                  onClick={toggleVoiceInput} 
+                  className={`voice-btn ${isListening ? 'listening' : ''}`}
+                  title="음성 입력"
+                >
+                  {isListening ? '🎤' : '🎙️'}
+                </button>
+                <input
+                  type="text"
+                  value={userInput}
+                  onChange={(e) => setUserInput(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
+                  placeholder={isListening ? "듣고 있습니다..." : "고객에게 할 말을 입력하거나 음성으로 말하세요..."}
+                  disabled={isListening}
+                />
+                <button onClick={handleSendMessage} className="send-btn" disabled={isListening}>
+                  전송
+                </button>
+              </>
+            )}
+            {handsFreeMode && (
+              <div className="handsfree-input-area">
+                <div className="handsfree-message">
+                  {isListening ? (
+                    <>
+                      <div className="listening-animation">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                      </div>
+                      <p>🎤 듣고 있습니다... 말씀하세요!</p>
+                      {userInput && <p className="recognized-text">"{userInput}"</p>}
+                    </>
+                  ) : isSpeaking ? (
+                    <>
+                      <div className="speaking-animation">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                      </div>
+                      <p>🔊 고객이 응답하는 중...</p>
+                    </>
+                  ) : isWaitingForSpeech ? (
+                    <p>⏳ 잠시만 기다려주세요...</p>
+                  ) : (
+                    <p>✅ 대화 준비 완료</p>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
         </div>
       )}

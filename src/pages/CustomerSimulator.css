@@ -946,3 +946,221 @@
     width: 100%;
   }
 }
+
+
+/* 핸즈프리 모드 버튼 */
+.handsfree-btn {
+  padding: 8px 16px;
+  background: #9E9E9E;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: bold;
+  transition: all 0.3s ease;
+}
+
+.handsfree-btn.active {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  animation: glow 2s infinite;
+}
+
+@keyframes glow {
+  0%, 100% {
+    box-shadow: 0 0 5px rgba(102, 126, 234, 0.5);
+  }
+  50% {
+    box-shadow: 0 0 20px rgba(102, 126, 234, 0.8);
+  }
+}
+
+.handsfree-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* 핸즈프리 상태 표시 */
+.handsfree-status {
+  padding: 20px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 15px;
+  margin: 15px 0;
+  color: white;
+  text-align: center;
+}
+
+.status-indicator {
+  font-size: 24px;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+.status-speaking {
+  color: #FFD700;
+  animation: fadeInOut 1.5s infinite;
+}
+
+.status-listening {
+  color: #4CAF50;
+  animation: fadeInOut 1.5s infinite;
+}
+
+.status-waiting {
+  color: #FF9800;
+}
+
+.status-ready {
+  color: #E0E0E0;
+}
+
+@keyframes fadeInOut {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.handsfree-tip {
+  font-size: 14px;
+  margin: 10px 0 0 0;
+  opacity: 0.9;
+}
+
+/* 핸즈프리 입력 영역 */
+.handsfree-input-area {
+  padding: 40px 20px;
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+  border-radius: 15px;
+  text-align: center;
+  min-height: 150px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.handsfree-message {
+  width: 100%;
+}
+
+.handsfree-message p {
+  font-size: 18px;
+  font-weight: bold;
+  color: #333;
+  margin: 10px 0;
+}
+
+.recognized-text {
+  font-size: 16px;
+  color: #667eea;
+  font-style: italic;
+  margin-top: 15px;
+  padding: 10px;
+  background: white;
+  border-radius: 8px;
+}
+
+/* 듣는 중 애니메이션 */
+.listening-animation {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.listening-animation span {
+  width: 15px;
+  height: 15px;
+  background: #4CAF50;
+  border-radius: 50%;
+  animation: bounce 1.4s infinite ease-in-out both;
+}
+
+.listening-animation span:nth-child(1) {
+  animation-delay: -0.32s;
+}
+
+.listening-animation span:nth-child(2) {
+  animation-delay: -0.16s;
+}
+
+@keyframes bounce {
+  0%, 80%, 100% {
+    transform: scale(0);
+  }
+  40% {
+    transform: scale(1);
+  }
+}
+
+/* 말하는 중 애니메이션 */
+.speaking-animation {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.speaking-animation span {
+  width: 8px;
+  height: 40px;
+  background: #FFD700;
+  border-radius: 4px;
+  animation: wave 1.2s infinite ease-in-out;
+}
+
+.speaking-animation span:nth-child(1) {
+  animation-delay: -0.4s;
+}
+
+.speaking-animation span:nth-child(2) {
+  animation-delay: -0.2s;
+}
+
+.speaking-animation span:nth-child(3) {
+  animation-delay: 0s;
+}
+
+@keyframes wave {
+  0%, 100% {
+    transform: scaleY(0.5);
+  }
+  50% {
+    transform: scaleY(1);
+  }
+}
+
+/* 반응형 - 핸즈프리 */
+@media (max-width: 768px) {
+  .handsfree-btn {
+    font-size: 12px;
+    padding: 6px 12px;
+  }
+  
+  .handsfree-status {
+    padding: 15px;
+  }
+  
+  .status-indicator {
+    font-size: 18px;
+  }
+  
+  .handsfree-tip {
+    font-size: 12px;
+  }
+  
+  .handsfree-input-area {
+    padding: 30px 15px;
+    min-height: 120px;
+  }
+  
+  .handsfree-message p {
+    font-size: 16px;
+  }
+  
+  .recognized-text {
+    font-size: 14px;
+  }
+}
