@@ -170,12 +170,12 @@
 .simulation-area {
   display: flex;
   flex-direction: column;
-  height: calc(100vh - 250px);
   min-height: 600px;
 }
 
 .conversation-area {
   flex: 1;
+  min-height: 400px;
   overflow-y: auto;
   padding: 20px;
   background: #f8f9fa;
