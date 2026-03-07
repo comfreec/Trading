@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom'
 import Home from './pages/Home'
 import CustomerSimulator from './pages/CustomerSimulator'
@@ -11,10 +11,55 @@ import './App.css'
 
 function App() {
   const [menuOpen, setMenuOpen] = useState(false)
+  const [deferredPrompt, setDeferredPrompt] = useState(null)
+  const [showInstallPrompt, setShowInstallPrompt] = useState(false)
+
+  useEffect(() => {
+    // PWA 설치 프롬프트 감지
+    const handler = (e) => {
+      e.preventDefault()
+      setDeferredPrompt(e)
+      setShowInstallPrompt(true)
+    }
+
+    window.addEventListener('beforeinstallprompt', handler)
+
+    return () => window.removeEventListener('beforeinstallprompt', handler)
+  }, [])
+
+  const handleInstallClick = async () => {
+    if (!deferredPrompt) return
+
+    deferredPrompt.prompt()
+    const { outcome } = await deferredPrompt.userChoice
+    
+    if (outcome === 'accepted') {
+      console.log('✅ PWA 설치 완료')
+    }
+    
+    setDeferredPrompt(null)
+    setShowInstallPrompt(false)
+  }
 
   return (
     <Router>
       <div className="app">
+        {showInstallPrompt && (
+          <div className="install-prompt">
+            <div className="install-content">
+              <span>📱 앱으로 설치하고 더 편하게 사용하세요!</span>
+              <div className="install-buttons">
+                <button onClick={handleInstallClick} className="install-btn">
+                  설치하기
+                </button>
+                <button onClick={() => setShowInstallPrompt(false)} className="dismiss-btn">
+                  나중에
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
         <nav className="navbar">
           <div className="nav-container">
             <Link to="/" className="logo">

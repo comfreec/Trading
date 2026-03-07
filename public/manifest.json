@@ -1,0 +1,26 @@
+{
+  "name": "코웨이 영업 마스터 트레이닝",
+  "short_name": "코웨이 트레이닝",
+  "description": "코웨이 렌탈 영업 트레이닝 플랫폼",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#667eea",
+  "theme_color": "#667eea",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["business", "education", "productivity"],
+  "lang": "ko-KR"
+}

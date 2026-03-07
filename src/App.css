@@ -2,6 +2,72 @@
   min-height: 100vh;
 }
 
+.install-prompt {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 15px 20px;
+  box-shadow: 0 -4px 20px rgba(0,0,0,0.2);
+  z-index: 1000;
+  animation: slideUp 0.3s ease-out;
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+.install-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 15px;
+}
+
+.install-content span {
+  flex: 1;
+  font-weight: 500;
+}
+
+.install-buttons {
+  display: flex;
+  gap: 10px;
+}
+
+.install-btn, .dismiss-btn {
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.install-btn {
+  background: white;
+  color: #667eea;
+}
+
+.install-btn:hover {
+  background: #f0f0f0;
+}
+
+.dismiss-btn {
+  background: rgba(255,255,255,0.2);
+  color: white;
+}
+
+.dismiss-btn:hover {
+  background: rgba(255,255,255,0.3);
+}
+
 .navbar {
   background: white;
   box-shadow: 0 2px 10px rgba(0,0,0,0.1);
