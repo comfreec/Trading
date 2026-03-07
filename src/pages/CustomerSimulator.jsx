@@ -36,6 +36,7 @@ function CustomerSimulator() {
   const [handsFreeMode, setHandsFreeMode] = useState(false)
   const [isWaitingForSpeech, setIsWaitingForSpeech] = useState(false)
   const [micPermission, setMicPermission] = useState('prompt') // 'granted', 'denied', 'prompt'
+  const [statusMessage, setStatusMessage] = useState(null) // UI 메시지 표시용
   
   // Ref로 최신 상태 유지
   const handsFreeRef = useRef(handsFreeMode)
@@ -71,12 +72,16 @@ function CustomerSimulator() {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
       stream.getTracks().forEach(track => track.stop())
       setMicPermission('granted')
-      alert('✅ 마이크 권한이 허용되었습니다!\n\n이제 음성 기능을 사용할 수 있습니다.')
+      setStatusMessage({ type: 'success', text: '✅ 마이크 권한이 허용되었습니다! 이제 음성 기능을 사용할 수 있습니다.' })
+      setTimeout(() => setStatusMessage(null), 3000)
       return true
     } catch (err) {
       console.error('마이크 권한 거부:', err)
       setMicPermission('denied')
-      alert('❌ 마이크 권한이 거부되었습니다.\n\n해결 방법:\n1. 주소창 왼쪽 자물쇠(🔒) 클릭\n2. "사이트 설정" 선택\n3. "마이크" 권한을 "허용"으로 변경\n4. 페이지 새로고침')
+      setStatusMessage({ 
+        type: 'error', 
+        text: '❌ 마이크 권한이 거부되었습니다. 주소창 왼쪽 자물쇠(🔒)를 클릭하여 마이크 권한을 허용해주세요.' 
+      })
       return false
     }
   }
@@ -315,10 +320,18 @@ function CustomerSimulator() {
       const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
       
       if (isMobile) {
-        alert('🎙️ 핸즈프리 모드 활성화!\n\n모바일에서는:\n1. 고객 음성이 끝나면 화면을 터치하세요\n2. 자동으로 음성 인식이 시작됩니다\n3. 말을 마치면 자동으로 전송됩니다\n\n편하게 대화하세요!')
+        setStatusMessage({ 
+          type: 'success', 
+          text: '🎙️ 핸즈프리 모드 ON! 고객 음성 후 화면 터치 → 말하기 → 자동 전송' 
+        })
       } else {
-        alert('🎙️ 핸즈프리 모드 활성화!\n\n고객이 말을 끝내면 자동으로 당신 차례가 됩니다.\n말을 마치면 자동으로 고객이 응답합니다.\n\n편하게 대화하세요!')
+        setStatusMessage({ 
+          type: 'success', 
+          text: '🎙️ 핸즈프리 모드 ON! 고객 말 끝나면 자동으로 당신 차례 → 말하면 자동 전송' 
+        })
       }
+      
+      setTimeout(() => setStatusMessage(null), 5000)
       
       // 대화 중이면 바로 음성 인식 시작 (데스크톱만)
       if (conversation.length > 0 && !isMobile) {
@@ -329,6 +342,8 @@ function CustomerSimulator() {
       if (isListening && recognition) {
         recognition.stop()
       }
+      setStatusMessage({ type: 'info', text: '핸즈프리 모드 OFF' })
+      setTimeout(() => setStatusMessage(null), 2000)
     }
   }
 
@@ -605,13 +620,16 @@ function CustomerSimulator() {
         browserInfo = '이 브라우저는 음성 인식을 지원하지 않습니다.'
       }
       
-      alert(`${browserInfo}\n\n권장 브라우저:\n- Android: Chrome\n- iOS: Safari (14.5 이상)`)
+      setStatusMessage({ type: 'error', text: `${browserInfo} 권장: Android-Chrome, iOS-Safari` })
       return
     }
 
     // 마이크 권한 체크
     if (micPermission === 'denied') {
-      alert('❌ 마이크 권한이 거부되었습니다.\n\n해결 방법:\n1. 주소창 왼쪽 자물쇠(🔒) 클릭\n2. "사이트 설정" 선택\n3. "마이크" 권한을 "허용"으로 변경\n4. 페이지 새로고침')
+      setStatusMessage({ 
+        type: 'error', 
+        text: '❌ 마이크 권한이 거부되었습니다. 주소창 왼쪽 자물쇠(🔒)를 클릭하여 마이크 권한을 허용해주세요.' 
+      })
       return
     }
 
@@ -653,11 +671,14 @@ function CustomerSimulator() {
           setIsListening(false)
           
           if (error.message && error.message.includes('not-allowed')) {
-            alert('마이크 권한이 필요합니다.\n\n해결 방법:\n1. 주소창 왼쪽 아이콘 터치\n2. "사이트 설정" 선택\n3. "마이크" 권한 허용\n4. 페이지 새로고침')
+            setStatusMessage({ 
+              type: 'error', 
+              text: '마이크 권한이 필요합니다. 주소창 왼쪽 자물쇠를 클릭하여 권한을 허용해주세요.' 
+            })
           } else if (error.message && error.message.includes('already started')) {
-            alert('음성 인식이 이미 실행 중입니다.\n\n잠시 후 다시 시도해주세요.')
+            setStatusMessage({ type: 'warning', text: '음성 인식이 이미 실행 중입니다. 잠시 후 다시 시도해주세요.' })
           } else {
-            alert(`음성 인식 시작 오류\n\n페이지를 새로고침하고 다시 시도해주세요.\n\n오류: ${error.message}`)
+            setStatusMessage({ type: 'error', text: `음성 인식 오류: ${error.message}` })
           }
         }
       }, 100)
@@ -680,6 +701,14 @@ function CustomerSimulator() {
           </div>
         </div>
       </div>
+
+      {/* 상태 메시지 표시 */}
+      {statusMessage && (
+        <div className={`status-message ${statusMessage.type}`}>
+          <span>{statusMessage.text}</span>
+          <button onClick={() => setStatusMessage(null)} className="close-status">×</button>
+        </div>
+      )}
 
       {!selectedCustomer ? (
         <div className="customer-selection">

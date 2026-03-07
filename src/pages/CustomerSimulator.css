@@ -1264,3 +1264,80 @@
     font-size: 13px;
   }
 }
+
+
+/* 상태 메시지 */
+.status-message {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 15px 25px;
+  border-radius: 10px;
+  color: white;
+  font-weight: bold;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  max-width: 90%;
+  animation: slideDown 0.3s ease;
+}
+
+@keyframes slideDown {
+  from {
+    transform: translateX(-50%) translateY(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(-50%) translateY(0);
+    opacity: 1;
+  }
+}
+
+.status-message.success {
+  background: linear-gradient(135deg, #4CAF50, #45a049);
+}
+
+.status-message.error {
+  background: linear-gradient(135deg, #f44336, #d32f2f);
+}
+
+.status-message.warning {
+  background: linear-gradient(135deg, #FF9800, #F57C00);
+}
+
+.status-message.info {
+  background: linear-gradient(135deg, #2196F3, #1976D2);
+}
+
+.status-message span {
+  flex: 1;
+}
+
+.close-status {
+  background: rgba(255, 255, 255, 0.3);
+  border: none;
+  color: white;
+  font-size: 24px;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.3s ease;
+}
+
+.close-status:hover {
+  background: rgba(255, 255, 255, 0.5);
+}
+
+@media (max-width: 768px) {
+  .status-message {
+    font-size: 14px;
+    padding: 12px 20px;
+  }
+}
