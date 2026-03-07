@@ -1189,3 +1189,78 @@
 .mobile-speak-btn:active {
   transform: scale(0.95);
 }
+
+
+/* 마이크 권한 배너 */
+.mic-permission-banner {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 25px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 15px;
+  color: white;
+  margin-bottom: 30px;
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+}
+
+.permission-icon {
+  font-size: 48px;
+  animation: bounce 2s infinite;
+}
+
+.permission-content {
+  flex: 1;
+}
+
+.permission-content h3 {
+  margin: 0 0 10px 0;
+  font-size: 18px;
+  color: white;
+}
+
+.permission-content p {
+  margin: 0 0 15px 0;
+  font-size: 14px;
+  opacity: 0.9;
+}
+
+.permission-btn {
+  padding: 12px 24px;
+  background: white;
+  color: #667eea;
+  border: none;
+  border-radius: 25px;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.permission-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.permission-btn:active {
+  transform: translateY(0);
+}
+
+@media (max-width: 768px) {
+  .mic-permission-banner {
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .permission-icon {
+    font-size: 36px;
+  }
+  
+  .permission-content h3 {
+    font-size: 16px;
+  }
+  
+  .permission-content p {
+    font-size: 13px;
+  }
+}

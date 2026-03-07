@@ -35,6 +35,7 @@ function CustomerSimulator() {
   const [availableVoices, setAvailableVoices] = useState([])
   const [handsFreeMode, setHandsFreeMode] = useState(false)
   const [isWaitingForSpeech, setIsWaitingForSpeech] = useState(false)
+  const [micPermission, setMicPermission] = useState('prompt') // 'granted', 'denied', 'prompt'
   
   // Ref로 최신 상태 유지
   const handsFreeRef = useRef(handsFreeMode)
@@ -48,6 +49,37 @@ function CustomerSimulator() {
   React.useEffect(() => {
     userInputRef.current = userInput
   }, [userInput])
+
+  // 마이크 권한 체크
+  React.useEffect(() => {
+    if (navigator.permissions && navigator.permissions.query) {
+      navigator.permissions.query({ name: 'microphone' }).then(permissionStatus => {
+        setMicPermission(permissionStatus.state)
+        
+        permissionStatus.onchange = () => {
+          setMicPermission(permissionStatus.state)
+        }
+      }).catch(err => {
+        console.log('권한 체크 실패:', err)
+      })
+    }
+  }, [])
+
+  // 마이크 권한 요청
+  const requestMicPermission = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+      stream.getTracks().forEach(track => track.stop())
+      setMicPermission('granted')
+      alert('✅ 마이크 권한이 허용되었습니다!\n\n이제 음성 기능을 사용할 수 있습니다.')
+      return true
+    } catch (err) {
+      console.error('마이크 권한 거부:', err)
+      setMicPermission('denied')
+      alert('❌ 마이크 권한이 거부되었습니다.\n\n해결 방법:\n1. 주소창 왼쪽 자물쇠(🔒) 클릭\n2. "사이트 설정" 선택\n3. "마이크" 권한을 "허용"으로 변경\n4. 페이지 새로고침')
+      return false
+    }
+  }
 
   // 음성 인식 초기화
   React.useEffect(() => {
@@ -263,8 +295,17 @@ function CustomerSimulator() {
   }
 
   // 핸즈프리 모드 토글
-  const toggleHandsFreeMode = () => {
+  const toggleHandsFreeMode = async () => {
     const newMode = !handsFreeMode
+    
+    // 마이크 권한 체크
+    if (newMode && micPermission !== 'granted') {
+      const granted = await requestMicPermission()
+      if (!granted) {
+        return
+      }
+    }
+    
     setHandsFreeMode(newMode)
     
     if (newMode) {
@@ -568,6 +609,23 @@ function CustomerSimulator() {
       return
     }
 
+    // 마이크 권한 체크
+    if (micPermission === 'denied') {
+      alert('❌ 마이크 권한이 거부되었습니다.\n\n해결 방법:\n1. 주소창 왼쪽 자물쇠(🔒) 클릭\n2. "사이트 설정" 선택\n3. "마이크" 권한을 "허용"으로 변경\n4. 페이지 새로고침')
+      return
+    }
+
+    if (micPermission === 'prompt') {
+      // 권한 요청
+      requestMicPermission().then(granted => {
+        if (granted) {
+          // 권한 받은 후 음성 인식 시작
+          setTimeout(() => toggleVoiceInput(), 500)
+        }
+      })
+      return
+    }
+
     if (isListening) {
       console.log('🛑 음성 인식 중지 요청')
       try {
@@ -626,6 +684,20 @@ function CustomerSimulator() {
       {!selectedCustomer ? (
         <div className="customer-selection">
           <h2>고객 유형을 선택하세요</h2>
+          
+          {micPermission !== 'granted' && (
+            <div className="mic-permission-banner">
+              <div className="permission-icon">🎤</div>
+              <div className="permission-content">
+                <h3>음성 기능을 사용하려면 마이크 권한이 필요합니다</h3>
+                <p>실전처럼 음성으로 대화하며 영업 연습을 할 수 있습니다</p>
+                <button onClick={requestMicPermission} className="permission-btn">
+                  마이크 권한 허용하기
+                </button>
+              </div>
+            </div>
+          )}
+          
           <div className="customer-grid">
             {customerTypes.map(customer => (
               <div key={customer.id} className="customer-card" onClick={() => startSimulation(customer)}>
