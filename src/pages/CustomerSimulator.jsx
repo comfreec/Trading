@@ -16,58 +16,77 @@ function CustomerSimulator() {
       const recognitionInstance = new SpeechRecognition()
       
       recognitionInstance.continuous = false
-      recognitionInstance.interimResults = false
+      recognitionInstance.interimResults = true // 중간 결과도 표시
       recognitionInstance.lang = 'ko-KR'
       recognitionInstance.maxAlternatives = 1
       
       recognitionInstance.onstart = () => {
-        console.log('Speech recognition started')
+        console.log('🎤 음성 인식 시작됨')
         setIsListening(true)
       }
       
       recognitionInstance.onresult = (event) => {
-        console.log('Speech recognition result:', event)
-        const transcript = event.results[0][0].transcript
+        console.log('📝 음성 인식 결과:', event)
+        
+        // 최종 결과 또는 중간 결과 가져오기
+        let transcript = ''
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+          transcript += event.results[i][0].transcript
+        }
+        
+        console.log('인식된 텍스트:', transcript)
         setUserInput(transcript)
+        
+        // 최종 결과면 자동으로 중지
+        if (event.results[event.results.length - 1].isFinal) {
+          console.log('✅ 최종 결과 확정')
+        }
       }
       
       recognitionInstance.onerror = (event) => {
-        console.error('Speech recognition error:', event.error)
+        console.error('❌ 음성 인식 오류:', event.error, event)
         setIsListening(false)
         
-        let errorMessage = '음성 인식 오류가 발생했습니다.'
+        let errorMessage = ''
         
         switch(event.error) {
           case 'no-speech':
-            errorMessage = '음성이 감지되지 않았습니다. 다시 시도해주세요.'
+            errorMessage = '음성이 감지되지 않았습니다.\n\n조용한 곳에서 다시 시도해주세요.'
             break
           case 'audio-capture':
-            errorMessage = '마이크를 찾을 수 없습니다. 마이크가 연결되어 있는지 확인해주세요.'
+            errorMessage = '마이크를 사용할 수 없습니다.\n\n다른 앱이 마이크를 사용 중인지 확인해주세요.'
             break
           case 'not-allowed':
-            errorMessage = '마이크 권한이 거부되었습니다.\n\n브라우저 설정 > 사이트 설정 > 마이크에서 권한을 허용해주세요.'
+            errorMessage = '마이크 권한이 거부되었습니다.\n\nChrome 설정에서 이 사이트의 마이크 권한을 확인해주세요.'
             break
           case 'network':
-            errorMessage = '네트워크 오류가 발생했습니다. 인터넷 연결을 확인해주세요.'
+            errorMessage = '네트워크 오류입니다.\n\n인터넷 연결을 확인해주세요.'
             break
           case 'aborted':
-            // 사용자가 중단한 경우 메시지 표시 안 함
+            // 사용자가 중단한 경우
+            console.log('사용자가 음성 인식 중단')
             return
+          case 'service-not-allowed':
+            errorMessage = '음성 인식 서비스를 사용할 수 없습니다.\n\n브라우저를 업데이트하거나 다시 시작해주세요.'
+            break
           default:
-            errorMessage = `음성 인식 오류: ${event.error}\n\nChrome 또는 Safari 브라우저를 사용해주세요.`
+            errorMessage = `음성 인식 오류: ${event.error}\n\n페이지를 새로고침하고 다시 시도해주세요.`
         }
         
-        alert(errorMessage)
+        if (errorMessage) {
+          alert(errorMessage)
+        }
       }
       
       recognitionInstance.onend = () => {
-        console.log('Speech recognition ended')
+        console.log('🛑 음성 인식 종료됨')
         setIsListening(false)
       }
       
       setRecognition(recognitionInstance)
+      console.log('✅ 음성 인식 초기화 완료')
     } catch (error) {
-      console.error('Failed to initialize speech recognition:', error)
+      console.error('❌ 음성 인식 초기화 실패:', error)
     }
   }, [])
 
@@ -529,7 +548,7 @@ function CustomerSimulator() {
     }
   }
 
-  const toggleVoiceInput = async () => {
+  const toggleVoiceInput = () => {
     if (!recognition) {
       const userAgent = navigator.userAgent.toLowerCase()
       let browserInfo = ''
@@ -549,6 +568,7 @@ function CustomerSimulator() {
     }
 
     if (isListening) {
+      console.log('🛑 음성 인식 중지 요청')
       try {
         recognition.stop()
       } catch (error) {
@@ -556,47 +576,19 @@ function CustomerSimulator() {
       }
       setIsListening(false)
     } else {
+      console.log('🎤 음성 인식 시작 요청')
       try {
-        // 먼저 마이크 권한 확인
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
-        stream.getTracks().forEach(track => track.stop()) // 권한 확인 후 스트림 종료
-        
         setUserInput('')
         recognition.start()
+        console.log('✅ recognition.start() 호출 완료')
       } catch (error) {
-        console.error('Microphone permission error:', error)
+        console.error('❌ Start recognition error:', error)
         setIsListening(false)
         
-        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent)
-        const isAndroid = /Android/.test(navigator.userAgent)
-        
-        if (error.name === 'NotAllowedError' || error.name === 'PermissionDeniedError') {
-          let permissionGuide = '마이크 권한이 필요합니다.\n\n'
-          
-          if (isIOS) {
-            permissionGuide += '📱 iOS 설정 방법:\n'
-            permissionGuide += '1. 설정 앱 열기\n'
-            permissionGuide += '2. Safari 선택\n'
-            permissionGuide += '3. 마이크 권한 허용\n'
-            permissionGuide += '4. Safari 완전히 종료 후 다시 열기'
-          } else if (isAndroid) {
-            permissionGuide += '📱 Android 설정 방법:\n'
-            permissionGuide += '1. 주소창 왼쪽 아이콘 터치\n'
-            permissionGuide += '2. 권한 또는 사이트 설정 선택\n'
-            permissionGuide += '3. 마이크 권한 허용\n'
-            permissionGuide += '또는\n'
-            permissionGuide += '설정 > 앱 > Chrome > 권한 > 마이크 허용'
-          } else {
-            permissionGuide += '브라우저 설정에서 마이크 권한을 허용해주세요.'
-          }
-          
-          alert(permissionGuide)
-        } else if (error.name === 'NotFoundError') {
-          alert('마이크를 찾을 수 없습니다.\n\n기기에 마이크가 있는지 확인해주세요.')
-        } else if (error.name === 'NotSupportedError') {
-          alert('HTTPS 연결이 필요합니다.\n\n현재 URL이 https://로 시작하는지 확인해주세요.')
+        if (error.message && error.message.includes('already started')) {
+          alert('음성 인식이 이미 실행 중입니다.\n\n잠시 후 다시 시도해주세요.')
         } else {
-          alert(`마이크 접근 오류: ${error.name}\n\n브라우저를 완전히 종료하고 다시 시도해주세요.`)
+          alert(`음성 인식 시작 오류\n\n페이지를 새로고침하고 다시 시도해주세요.\n\n오류: ${error.message}`)
         }
       }
     }
