@@ -1164,3 +1164,28 @@
     font-size: 14px;
   }
 }
+
+
+/* 모바일 터치 버튼 */
+.mobile-speak-btn {
+  margin-top: 15px;
+  padding: 15px 30px;
+  background: white;
+  color: #667eea;
+  border: 3px solid white;
+  border-radius: 50px;
+  font-size: 18px;
+  font-weight: bold;
+  cursor: pointer;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  transition: all 0.3s ease;
+}
+
+.mobile-speak-btn:hover {
+  transform: scale(1.05);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+}
+
+.mobile-speak-btn:active {
+  transform: scale(0.95);
+}

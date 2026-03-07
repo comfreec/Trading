@@ -203,16 +203,23 @@ function CustomerSimulator() {
     setIsWaitingForSpeech(true)
     
     setTimeout(() => {
-      if (!isListening && handsFreeMode) {
+      if (!isListening && handsFreeMode && !isSpeaking) {
         try {
           recognition.start()
           console.log('🎤 핸즈프리: 자동 음성 인식 시작')
         } catch (error) {
           console.error('자동 음성 인식 시작 실패:', error)
           setIsWaitingForSpeech(false)
+          
+          // 모바일에서는 사용자 제스처 필요
+          if (error.message && error.message.includes('already started')) {
+            console.log('이미 실행 중')
+          }
         }
+      } else {
+        setIsWaitingForSpeech(false)
       }
-    }, 500)
+    }, 800)
   }
 
   // 핸즈프리 모드 토글
@@ -222,10 +229,18 @@ function CustomerSimulator() {
     
     if (newMode) {
       setVoiceEnabled(true) // 음성 자동 활성화
-      alert('🎙️ 핸즈프리 모드 활성화!\n\n고객이 말을 끝내면 자동으로 당신 차례가 됩니다.\n말을 마치면 자동으로 고객이 응답합니다.\n\n편하게 대화하세요!')
       
-      // 대화 중이면 바로 음성 인식 시작
-      if (conversation.length > 0) {
+      // 모바일 감지
+      const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
+      
+      if (isMobile) {
+        alert('🎙️ 핸즈프리 모드 활성화!\n\n모바일에서는:\n1. 고객 음성이 끝나면 화면을 터치하세요\n2. 자동으로 음성 인식이 시작됩니다\n3. 말을 마치면 자동으로 전송됩니다\n\n편하게 대화하세요!')
+      } else {
+        alert('🎙️ 핸즈프리 모드 활성화!\n\n고객이 말을 끝내면 자동으로 당신 차례가 됩니다.\n말을 마치면 자동으로 고객이 응답합니다.\n\n편하게 대화하세요!')
+      }
+      
+      // 대화 중이면 바로 음성 인식 시작 (데스크톱만)
+      if (conversation.length > 0 && !isMobile) {
         startAutoListening()
       }
     } else {
@@ -233,6 +248,13 @@ function CustomerSimulator() {
       if (isListening && recognition) {
         recognition.stop()
       }
+    }
+  }
+
+  // 모바일용 터치로 음성 인식 시작
+  const handleMobileTouchToSpeak = () => {
+    if (handsFreeMode && !isListening && !isSpeaking && !isWaitingForSpeech) {
+      startAutoListening()
     }
   }
 
@@ -791,6 +813,11 @@ function CustomerSimulator() {
                 )}
               </div>
               <p className="handsfree-tip">💡 핸즈프리 모드: 버튼 없이 자연스럽게 대화하세요</p>
+              {/iPhone|iPad|iPod|Android/i.test(navigator.userAgent) && !isListening && !isSpeaking && (
+                <button onClick={handleMobileTouchToSpeak} className="mobile-speak-btn">
+                  👆 터치하여 말하기
+                </button>
+              )}
             </div>
           )}
 
