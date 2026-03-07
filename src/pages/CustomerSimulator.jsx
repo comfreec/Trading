@@ -577,20 +577,34 @@ function CustomerSimulator() {
       setIsListening(false)
     } else {
       console.log('🎤 음성 인식 시작 요청')
-      try {
-        setUserInput('')
-        recognition.start()
-        console.log('✅ recognition.start() 호출 완료')
-      } catch (error) {
-        console.error('❌ Start recognition error:', error)
-        setIsListening(false)
-        
-        if (error.message && error.message.includes('already started')) {
-          alert('음성 인식이 이미 실행 중입니다.\n\n잠시 후 다시 시도해주세요.')
-        } else {
-          alert(`음성 인식 시작 오류\n\n페이지를 새로고침하고 다시 시도해주세요.\n\n오류: ${error.message}`)
+      
+      // 모바일에서는 즉시 시작하지 말고 약간의 지연
+      setTimeout(() => {
+        try {
+          setUserInput('')
+          
+          // 이미 실행 중인지 확인
+          if (isListening) {
+            console.log('⚠️ 이미 실행 중')
+            return
+          }
+          
+          recognition.start()
+          console.log('✅ recognition.start() 호출 완료')
+        } catch (error) {
+          console.error('❌ Start recognition error:', error)
+          setIsListening(false)
+          
+          // 'not-allowed' 오류는 권한 문제
+          if (error.message && error.message.includes('not-allowed')) {
+            alert('마이크 권한이 필요합니다.\n\n해결 방법:\n1. 주소창 왼쪽 아이콘 터치\n2. "사이트 설정" 선택\n3. "마이크" 권한 허용\n4. 페이지 새로고침')
+          } else if (error.message && error.message.includes('already started')) {
+            alert('음성 인식이 이미 실행 중입니다.\n\n잠시 후 다시 시도해주세요.')
+          } else {
+            alert(`음성 인식 시작 오류\n\n페이지를 새로고침하고 다시 시도해주세요.\n\n오류: ${error.message}`)
+          }
         }
-      }
+      }, 100) // 100ms 지연
     }
   }
 
@@ -642,6 +656,25 @@ function CustomerSimulator() {
                   <li key={index}>{tip}</li>
                 ))}
               </ul>
+            </div>
+          )}
+
+          {!isListening && (
+            <div className="mobile-voice-guide">
+              <p>📱 모바일에서 음성이 안 되나요?</p>
+              <details>
+                <summary>해결 방법 보기</summary>
+                <ol>
+                  <li>주소창 왼쪽의 아이콘(🔒 또는 ⓘ) 터치</li>
+                  <li>"사이트 설정" 또는 "권한" 선택</li>
+                  <li>"마이크" 찾아서 "허용"으로 변경</li>
+                  <li>페이지 새로고침 (F5 또는 당겨서 새로고침)</li>
+                </ol>
+                <p style={{marginTop: '10px', fontSize: '14px', color: '#666'}}>
+                  💡 팁: 한 번 차단하면 자동으로 다시 요청하지 않아요. 
+                  위 방법으로 직접 허용해주셔야 합니다.
+                </p>
+              </details>
             </div>
           )}
 

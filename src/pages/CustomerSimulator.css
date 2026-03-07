@@ -124,6 +124,49 @@
   font-weight: bold;
 }
 
+.mobile-voice-guide {
+  background: #fff3cd;
+  padding: 15px;
+  border-radius: 10px;
+  margin-bottom: 20px;
+  border-left: 4px solid #ffc107;
+}
+
+.mobile-voice-guide p {
+  margin: 0 0 10px 0;
+  font-weight: 600;
+  color: #856404;
+}
+
+.mobile-voice-guide details {
+  cursor: pointer;
+}
+
+.mobile-voice-guide summary {
+  color: #667eea;
+  font-weight: 600;
+  padding: 8px;
+  background: white;
+  border-radius: 5px;
+  margin-bottom: 10px;
+  user-select: none;
+}
+
+.mobile-voice-guide summary:hover {
+  background: #f8f9ff;
+}
+
+.mobile-voice-guide ol {
+  margin: 10px 0;
+  padding-left: 20px;
+  color: #333;
+}
+
+.mobile-voice-guide li {
+  margin: 8px 0;
+  line-height: 1.5;
+}
+
 .conversation-area {
   height: 400px;
   overflow-y: auto;
