@@ -1,0 +1,148 @@
+.script-library {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.library-header {
+  text-align: center;
+  margin-bottom: 40px;
+  color: white;
+}
+
+.library-header h1 {
+  font-size: 42px;
+  margin-bottom: 10px;
+}
+
+.search-section {
+  margin-bottom: 30px;
+}
+
+.search-input {
+  width: 100%;
+  max-width: 600px;
+  margin: 0 auto;
+  display: block;
+  padding: 15px 20px;
+  font-size: 16px;
+  border-radius: 30px;
+  border: none;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+.category-tabs {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 30px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.category-tab {
+  background: white;
+  color: #333;
+  padding: 12px 24px;
+  border-radius: 25px;
+  font-size: 16px;
+  transition: all 0.3s;
+}
+
+.category-tab:hover {
+  background: #f0f0f0;
+}
+
+.category-tab.active {
+  background: #667eea;
+  color: white;
+}
+
+.scripts-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 25px;
+}
+
+.script-card {
+  background: white;
+  padding: 25px;
+  border-radius: 15px;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+  transition: all 0.3s;
+}
+
+.script-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+}
+
+.script-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+  padding-bottom: 15px;
+  border-bottom: 2px solid #f0f0f0;
+}
+
+.script-header h3 {
+  color: #667eea;
+  font-size: 20px;
+}
+
+.rating {
+  background: #fff3cd;
+  padding: 5px 12px;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: bold;
+}
+
+.script-situation {
+  margin-bottom: 15px;
+  color: #666;
+  font-size: 14px;
+}
+
+.script-content {
+  margin-bottom: 15px;
+}
+
+.script-content p {
+  background: #f8f9ff;
+  padding: 15px;
+  border-radius: 10px;
+  margin-top: 10px;
+  line-height: 1.6;
+  font-style: italic;
+  border-left: 4px solid #667eea;
+}
+
+.script-tips {
+  background: #e8f5e9;
+  padding: 12px;
+  border-radius: 8px;
+  font-size: 14px;
+  color: #2e7d32;
+}
+
+.no-results {
+  text-align: center;
+  padding: 60px 20px;
+  color: white;
+  font-size: 18px;
+}
+
+@media (max-width: 768px) {
+  .scripts-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .category-tabs {
+    gap: 8px;
+  }
+  
+  .category-tab {
+    padding: 10px 16px;
+    font-size: 14px;
+  }
+}

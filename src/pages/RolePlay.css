@@ -1,0 +1,400 @@
+.roleplay {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.roleplay-header {
+  text-align: center;
+  margin-bottom: 40px;
+  color: white;
+}
+
+.roleplay-header h1 {
+  font-size: 42px;
+  margin-bottom: 10px;
+}
+
+.scenarios-section {
+  margin-bottom: 50px;
+}
+
+.scenarios-section h2 {
+  text-align: center;
+  color: white;
+  font-size: 28px;
+  margin-bottom: 30px;
+}
+
+.scenarios-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 25px;
+}
+
+.scenario-card {
+  background: white;
+  padding: 30px;
+  border-radius: 15px;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+  transition: all 0.3s;
+}
+
+.scenario-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+}
+
+.scenario-icon {
+  font-size: 50px;
+  text-align: center;
+  margin-bottom: 15px;
+}
+
+.scenario-card h3 {
+  color: #667eea;
+  font-size: 22px;
+  margin-bottom: 12px;
+  text-align: center;
+}
+
+.scenario-card > p {
+  color: #666;
+  line-height: 1.6;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.scenario-details {
+  background: #f8f9fa;
+  padding: 20px;
+  border-radius: 10px;
+  margin-bottom: 20px;
+}
+
+.key-points strong {
+  color: #333;
+  display: block;
+  margin-bottom: 10px;
+}
+
+.key-points ul {
+  list-style: none;
+  padding-left: 0;
+}
+
+.key-points li {
+  padding: 5px 0;
+  padding-left: 20px;
+  position: relative;
+  color: #666;
+}
+
+.key-points li:before {
+  content: '✓';
+  position: absolute;
+  left: 0;
+  color: #667eea;
+  font-weight: bold;
+}
+
+.time-limit {
+  margin-top: 15px;
+  padding-top: 15px;
+  border-top: 1px solid #e0e0e0;
+  color: #999;
+  font-size: 14px;
+}
+
+.start-btn {
+  background: #667eea;
+  color: white;
+  width: 100%;
+  padding: 15px;
+  font-size: 16px;
+}
+
+.start-btn:hover {
+  background: #5568d3;
+}
+
+.expert-section {
+  margin-bottom: 50px;
+}
+
+.expert-section h2 {
+  text-align: center;
+  color: white;
+  font-size: 28px;
+  margin-bottom: 30px;
+}
+
+.expert-scripts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  gap: 25px;
+}
+
+.expert-card {
+  background: white;
+  padding: 30px;
+  border-radius: 15px;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+  border-top: 4px solid #ffd700;
+}
+
+.expert-card h3 {
+  color: #667eea;
+  font-size: 20px;
+  margin-bottom: 20px;
+}
+
+.expert-script {
+  margin-bottom: 15px;
+}
+
+.expert-script strong {
+  color: #333;
+  display: block;
+  margin-bottom: 10px;
+}
+
+.expert-script p {
+  background: #f8f9ff;
+  padding: 15px;
+  border-radius: 10px;
+  line-height: 1.6;
+  font-style: italic;
+  border-left: 4px solid #667eea;
+}
+
+.expert-tone {
+  color: #666;
+  font-size: 14px;
+  margin-bottom: 15px;
+}
+
+.expert-rating {
+  background: #fff3cd;
+  padding: 8px 15px;
+  border-radius: 20px;
+  display: inline-block;
+  font-weight: bold;
+}
+
+.recordings-section h2 {
+  text-align: center;
+  color: white;
+  font-size: 28px;
+  margin-bottom: 30px;
+}
+
+.recordings-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  gap: 25px;
+}
+
+.recording-card {
+  background: white;
+  padding: 25px;
+  border-radius: 15px;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+.recording-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: start;
+  margin-bottom: 15px;
+  padding-bottom: 15px;
+  border-bottom: 2px solid #f0f0f0;
+}
+
+.recording-header h3 {
+  color: #333;
+  font-size: 18px;
+  margin-bottom: 5px;
+}
+
+.recording-date {
+  color: #999;
+  font-size: 14px;
+}
+
+.recording-score {
+  font-size: 32px;
+  font-weight: bold;
+}
+
+.recording-info {
+  color: #666;
+  margin-bottom: 15px;
+}
+
+.recording-feedback {
+  background: #f8f9fa;
+  padding: 15px;
+  border-radius: 10px;
+  margin-bottom: 15px;
+}
+
+.recording-feedback strong {
+  color: #333;
+  display: block;
+  margin-bottom: 10px;
+}
+
+.recording-feedback ul {
+  list-style: none;
+  padding-left: 0;
+}
+
+.recording-feedback li {
+  padding: 5px 0;
+  color: #666;
+  font-size: 14px;
+}
+
+.recording-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.play-btn {
+  flex: 1;
+  background: #667eea;
+  color: white;
+}
+
+.play-btn:hover {
+  background: #5568d3;
+}
+
+.delete-btn {
+  background: #ffebee;
+  color: #fa709a;
+}
+
+.delete-btn:hover {
+  background: #fa709a;
+  color: white;
+}
+
+.recording-area {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 500px;
+}
+
+.recording-card-active {
+  background: white;
+  padding: 50px;
+  border-radius: 20px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+  text-align: center;
+  max-width: 600px;
+  width: 100%;
+}
+
+.scenario-icon-large {
+  font-size: 80px;
+  margin-bottom: 20px;
+}
+
+.recording-card-active h2 {
+  color: #333;
+  font-size: 28px;
+  margin-bottom: 15px;
+}
+
+.recording-card-active > p {
+  color: #666;
+  margin-bottom: 30px;
+  line-height: 1.6;
+}
+
+.recording-indicator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 15px;
+  margin-bottom: 30px;
+  font-size: 20px;
+  font-weight: 600;
+  color: #fa709a;
+}
+
+.recording-pulse {
+  width: 20px;
+  height: 20px;
+  background: #fa709a;
+  border-radius: 50%;
+  animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.3);
+    opacity: 0.7;
+  }
+}
+
+.key-points-reminder {
+  background: #f8f9ff;
+  padding: 25px;
+  border-radius: 12px;
+  margin-bottom: 30px;
+  text-align: left;
+  border-left: 4px solid #667eea;
+}
+
+.key-points-reminder h3 {
+  color: #667eea;
+  margin-bottom: 15px;
+}
+
+.key-points-reminder ul {
+  list-style: none;
+  padding-left: 0;
+}
+
+.key-points-reminder li {
+  padding: 8px 0;
+  padding-left: 25px;
+  position: relative;
+  color: #333;
+}
+
+.key-points-reminder li:before {
+  content: '✓';
+  position: absolute;
+  left: 0;
+  color: #667eea;
+  font-weight: bold;
+}
+
+.stop-btn {
+  background: #fa709a;
+  color: white;
+  padding: 15px 40px;
+  font-size: 18px;
+}
+
+.stop-btn:hover {
+  background: #e85d87;
+}
+
+@media (max-width: 768px) {
+  .scenarios-grid, .expert-scripts, .recordings-list {
+    grid-template-columns: 1fr;
+  }
+  
+  .recording-card-active {
+    padding: 30px;
+  }
+}
