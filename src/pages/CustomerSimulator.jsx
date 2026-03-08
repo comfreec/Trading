@@ -1305,6 +1305,16 @@ function CustomerSimulator() {
               </div>
             )}
           </div>
+
+          {/* 모바일 터치 버튼 - 핸즈프리 모드일 때만 표시 */}
+          {handsFreeMode && !isListening && !isSpeaking && !isWaitingForSpeech && (
+            <button 
+              onClick={handleMobileTouchToSpeak}
+              className={`mobile-speak-btn-fixed ${isListening ? 'listening' : ''}`}
+            >
+              🎤 터치하여 말하기
+            </button>
+          )}
         </div>
       )}
     </div>
