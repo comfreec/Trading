@@ -168,14 +168,34 @@ export class GeminiEngine {
       this.systemPromptAdded = true
     }
 
+    // 대화 히스토리가 너무 길면 최근 10개만 유지 (시스템 프롬프트 2개 + 최근 8개)
+    if (this.conversationHistory.length > 12) {
+      const systemMessages = this.conversationHistory.slice(0, 2) // 시스템 프롬프트 유지
+      const recentMessages = this.conversationHistory.slice(-8) // 최근 8개 메시지
+      this.conversationHistory = [...systemMessages, ...recentMessages]
+      console.log('대화 히스토리 정리: 최근 10개 메시지만 유지')
+    }
+
     this.conversationHistory.push({
       role: 'user',
       parts: [{ text: agentMessage }]
     })
 
     try {
+      console.log('🤖 Gemini API 호출 시작...')
+      console.log('📝 사용 중인 API 키:', currentKey.substring(0, 10) + '...')
+      console.log('📊 대화 히스토리 길이:', this.conversationHistory.length)
+      
       const response = await this.callGeminiAPI(currentKey)
+      console.log('✅ Gemini API 응답 받음:', response)
+      
+      if (!response.candidates || !response.candidates[0] || !response.candidates[0].content) {
+        console.error('❌ 응답 형식 오류:', JSON.stringify(response))
+        throw new Error('응답 형식이 올바르지 않습니다: ' + JSON.stringify(response))
+      }
+      
       const customerResponse = response.candidates[0].content.parts[0].text
+      console.log('💬 고객 응답:', customerResponse)
       
       this.conversationHistory.push({
         role: 'model',
@@ -190,17 +210,25 @@ export class GeminiEngine {
 
       return customerResponse
     } catch (error) {
-      console.error('Gemini API 오류:', error)
+      console.error('❌ Gemini API 오류 상세:', error)
+      console.error('오류 메시지:', error.message)
+      console.error('오류 스택:', error.stack)
       
       // 현재 키를 실패로 표시하고 다음 키로 재시도
       keyManager.markKeyAsFailed(currentKey)
       const nextKey = keyManager.rotateKey()
       
       if (nextKey && nextKey !== currentKey) {
-        console.log('다음 API 키로 재시도...')
+        console.log('🔄 다음 API 키로 재시도...')
         try {
           const response = await this.callGeminiAPI(nextKey)
+          
+          if (!response.candidates || !response.candidates[0] || !response.candidates[0].content) {
+            throw new Error('재시도 응답 형식이 올바르지 않습니다')
+          }
+          
           const customerResponse = response.candidates[0].content.parts[0].text
+          console.log('✅ 재시도 성공:', customerResponse)
           
           this.conversationHistory.push({
             role: 'model',
@@ -210,11 +238,12 @@ export class GeminiEngine {
           this.updateSentiment(customerResponse)
           return customerResponse
         } catch (retryError) {
-          console.error('재시도 실패:', retryError)
+          console.error('❌ 재시도 실패:', retryError)
         }
       }
       
       // 모든 키가 실패하면 기본 응답 반환
+      console.warn('⚠️ 모든 API 키 실패 - fallback 응답 사용')
       const fallbackResponse = '음... 잠깐만요. 제가 좀 생각을 정리할 시간이 필요할 것 같아요. 다시 한번 말씀해주시겠어요?'
       this.conversationHistory.push({
         role: 'model',
@@ -231,7 +260,7 @@ export class GeminiEngine {
         temperature: 0.9,
         topK: 40,
         topP: 0.95,
-        maxOutputTokens: 150,
+        maxOutputTokens: 300, // 150 → 300으로 증가 (더 긴 응답)
         stopSequences: []
       },
       safetySettings: [
@@ -254,6 +283,12 @@ export class GeminiEngine {
       ]
     }
 
+    console.log('📤 Gemini API 요청:', {
+      url: `${GEMINI_API_URL}?key=${apiKey.substring(0, 10)}...`,
+      historyLength: this.conversationHistory.length,
+      lastMessage: this.conversationHistory[this.conversationHistory.length - 1]
+    })
+
     const response = await fetch(`${GEMINI_API_URL}?key=${apiKey}`, {
       method: 'POST',
       headers: {
@@ -264,10 +299,13 @@ export class GeminiEngine {
 
     if (!response.ok) {
       const errorText = await response.text()
+      console.error('❌ API 오류 응답:', errorText)
       throw new Error(`API 오류: ${response.status} - ${errorText}`)
     }
 
-    return await response.json()
+    const jsonResponse = await response.json()
+    console.log('📥 Gemini API 응답:', jsonResponse)
+    return jsonResponse
   }
 
   updateSentiment(response) {
@@ -293,6 +331,7 @@ export class GeminiEngine {
   reset() {
     this.conversationHistory = []
     this.sentiment = 'neutral'
+    this.systemPromptAdded = false // 시스템 프롬프트 초기화
   }
 }
 

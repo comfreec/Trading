@@ -1183,11 +1183,11 @@
 
 /* 모바일 터치 버튼 - 화면 하단 고정 */
 .mobile-speak-btn-fixed {
-  position: fixed;
-  bottom: 20px;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 1000;
+  position: fixed !important;
+  bottom: 20px !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  z-index: 9999 !important;
   padding: 15px 40px;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
@@ -1202,12 +1202,12 @@
 }
 
 .mobile-speak-btn-fixed:hover {
-  transform: translateX(-50%) scale(1.05);
+  transform: translateX(-50%) scale(1.05) !important;
   box-shadow: 0 6px 25px rgba(102, 126, 234, 0.7);
 }
 
 .mobile-speak-btn-fixed:active {
-  transform: translateX(-50%) scale(0.95);
+  transform: translateX(-50%) scale(0.95) !important;
 }
 
 .mobile-speak-btn-fixed.listening {
@@ -1226,7 +1226,7 @@
 
 @media (max-width: 768px) {
   .mobile-speak-btn-fixed {
-    bottom: 15px;
+    bottom: 15px !important;
     padding: 12px 30px;
     font-size: 14px;
   }
