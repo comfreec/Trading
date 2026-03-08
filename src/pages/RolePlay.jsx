@@ -230,49 +230,46 @@ function RolePlay() {
   const startScenario = async (scenario) => {
     setSelectedScenario(scenario)
     
+    let greeting = ''
+    
     if (useGemini && apiKeys.length > 0) {
-      // Gemini 엔진 생성 (롤플레이용 커스텀 페르소나)
-      const engine = new GeminiEngine(scenario.id)
-      // 페르소나 오버라이드
-      engine.personas[scenario.id] = scenario.persona
-      setGeminiEngine(engine)
-      
-      // 첫 인사 생성
-      const greeting = await engine.generateResponse('영업사원이 방문했습니다. 첫 인사를 하세요. 고객으로서 자연스럽게 반응하세요.')
-      setConversation([{ speaker: 'customer', text: greeting }])
-      
-      // 대화창으로 자동 스크롤
-      setTimeout(() => {
-        const conversationArea = document.querySelector('.conversation-area')
-        if (conversationArea) {
-          conversationArea.scrollIntoView({ behavior: 'smooth', block: 'start' })
-        }
-      }, 100)
-      
-      setTimeout(() => {
-        speakText(greeting, () => {
-          if (handsFreeMode) startAutoListening()
-        })
-      }, 500)
+      try {
+        // Gemini 엔진 생성 (롤플레이용 커스텀 페르소나)
+        const engine = new GeminiEngine(scenario.id)
+        // 페르소나 오버라이드
+        engine.personas[scenario.id] = scenario.persona
+        setGeminiEngine(engine)
+        
+        // 첫 인사 생성
+        greeting = await engine.generateResponse('영업사원이 방문했습니다. 첫 인사를 하세요. 고객으로서 자연스럽게 반응하세요.')
+        console.log('Gemini 인사:', greeting)
+      } catch (error) {
+        console.error('Gemini 인사 생성 실패:', error)
+        greeting = '안녕하세요. 무슨 일로 오셨나요?'
+      }
     } else {
       // 기본 인사
-      const greeting = '안녕하세요. 무슨 일로 오셨나요?'
-      setConversation([{ speaker: 'customer', text: greeting }])
-      
-      // 대화창으로 자동 스크롤
-      setTimeout(() => {
-        const conversationArea = document.querySelector('.conversation-area')
-        if (conversationArea) {
-          conversationArea.scrollIntoView({ behavior: 'smooth', block: 'start' })
-        }
-      }, 100)
-      
-      setTimeout(() => {
-        speakText(greeting, () => {
-          if (handsFreeMode) startAutoListening()
-        })
-      }, 500)
+      greeting = '안녕하세요. 무슨 일로 오셨나요?'
+      console.log('기본 인사:', greeting)
     }
+    
+    // 인사 설정
+    setConversation([{ speaker: 'customer', text: greeting }])
+    
+    // 대화창으로 자동 스크롤
+    setTimeout(() => {
+      const conversationArea = document.querySelector('.conversation-area')
+      if (conversationArea) {
+        conversationArea.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      }
+    }, 100)
+    
+    // 음성 출력
+    setTimeout(() => {
+      speakText(greeting, () => {
+        if (handsFreeMode) startAutoListening()
+      })
+    }, 500)
   }
 
   const handleSendMessage = async () => {
