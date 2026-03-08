@@ -417,6 +417,15 @@ function CustomerSimulator() {
       // Gemini는 비동기이므로 별도 처리
       engine.generateResponse('안녕하세요').then(greeting => {
         setConversation([{ speaker: 'customer', text: greeting }])
+        
+        // 대화창으로 자동 스크롤
+        setTimeout(() => {
+          const conversationArea = document.querySelector('.conversation-area')
+          if (conversationArea) {
+            conversationArea.scrollIntoView({ behavior: 'smooth', block: 'start' })
+          }
+        }, 100)
+        
         setTimeout(() => {
           speakText(greeting, () => {
             if (handsFreeMode) {
@@ -428,6 +437,15 @@ function CustomerSimulator() {
     } else {
       const greeting = engine.generateResponse('안녕하세요')
       setConversation([{ speaker: 'customer', text: greeting }])
+      
+      // 대화창으로 자동 스크롤
+      setTimeout(() => {
+        const conversationArea = document.querySelector('.conversation-area')
+        if (conversationArea) {
+          conversationArea.scrollIntoView({ behavior: 'smooth', block: 'start' })
+        }
+      }, 100)
+      
       setTimeout(() => {
         speakText(greeting, () => {
           if (handsFreeMode) {

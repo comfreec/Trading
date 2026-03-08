@@ -224,6 +224,14 @@ function RolePlay() {
       const greeting = await engine.generateResponse('안녕하세요')
       setConversation([{ speaker: 'customer', text: greeting }])
       
+      // 대화창으로 자동 스크롤
+      setTimeout(() => {
+        const conversationArea = document.querySelector('.conversation-area')
+        if (conversationArea) {
+          conversationArea.scrollIntoView({ behavior: 'smooth', block: 'start' })
+        }
+      }, 100)
+      
       setTimeout(() => {
         speakText(greeting, () => {
           if (handsFreeMode) startAutoListening()
@@ -233,6 +241,15 @@ function RolePlay() {
       // 기본 인사
       const greeting = '안녕하세요. 무슨 일로 오셨나요?'
       setConversation([{ speaker: 'customer', text: greeting }])
+      
+      // 대화창으로 자동 스크롤
+      setTimeout(() => {
+        const conversationArea = document.querySelector('.conversation-area')
+        if (conversationArea) {
+          conversationArea.scrollIntoView({ behavior: 'smooth', block: 'start' })
+        }
+      }, 100)
+      
       setTimeout(() => {
         speakText(greeting, () => {
           if (handsFreeMode) startAutoListening()
