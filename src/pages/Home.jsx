@@ -37,7 +37,7 @@ function Home() {
     {
       icon: '🛡️',
       title: '클레임 대응 매뉴얼',
-      description: '상황별 대응 화법과 해결 방안 14개 사례',
+      description: '상황별 대응 화법과 해결 방안 37개 사례',
       link: '/claim-guide',
       gradient: 'linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%)',
       badge: 'NEW'
