@@ -38,7 +38,7 @@ function CustomerSimulator() {
   const [isSpeaking, setIsSpeaking] = useState(false)
   const [selectedVoice, setSelectedVoice] = useState(null)
   const [availableVoices, setAvailableVoices] = useState([])
-  const [handsFreeMode, setHandsFreeMode] = useState(false)
+  const [handsFreeMode, setHandsFreeMode] = useState(true) // 기본값 true로 변경
   const [isWaitingForSpeech, setIsWaitingForSpeech] = useState(false)
   const [micPermission, setMicPermission] = useState('prompt') // 'granted', 'denied', 'prompt'
   const [statusMessage, setStatusMessage] = useState(null) // UI 메시지 표시용
