@@ -798,16 +798,26 @@
   word-break: break-word;
   overflow-wrap: break-word;
   white-space: pre-wrap;
+  overflow: visible;
+  hyphens: auto;
 }
 
 .message.customer .message-bubble {
   background: white;
   border: 2px solid #e0e0e0;
+  word-wrap: break-word;
+  word-break: break-word;
+  overflow-wrap: break-word;
+  white-space: pre-wrap;
 }
 
 .message.agent .message-bubble {
   background: #667eea;
   color: white;
+  word-wrap: break-word;
+  word-break: break-word;
+  overflow-wrap: break-word;
+  white-space: pre-wrap;
 }
 
 .input-area {
