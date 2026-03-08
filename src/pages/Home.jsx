@@ -23,28 +23,22 @@ function Home() {
     {
       icon: '📝',
       title: '영업 스크립트 라이브러리',
-      description: '상황별 효과적인 멘트와 성공 사례',
+      description: '상황별 효과적인 멘트 150+ 스크립트',
       link: '/scripts',
       gradient: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)'
     },
     {
       icon: '🧠',
       title: '제품 지식 퀴즈',
-      description: '코웨이 전 제품 마스터하기',
+      description: '145개 문제로 코웨이 전 제품 마스터',
       link: '/quiz',
-      gradient: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)'
-    },
-    {
-      icon: '📊',
-      title: '실적 추적 & 목표 관리',
-      description: '영업 성과를 한눈에 확인하고 관리',
-      link: '/performance',
-      gradient: 'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)'
+      gradient: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
+      badge: 'NEW'
     },
     {
       icon: '👥',
       title: '커뮤니티',
-      description: '동료들과 노하우 공유하기',
+      description: '영업 노하우와 경험 공유하기',
       link: '/community',
       gradient: 'linear-gradient(135deg, #30cfd0 0%, #330867 100%)'
     }
@@ -89,12 +83,12 @@ function Home() {
         </div>
         <div className="stat-card">
           <div className="stat-icon">📚</div>
-          <h2>1000+</h2>
-          <p>실전 스크립트</p>
+          <h2>150+</h2>
+          <p>영업 스크립트</p>
         </div>
         <div className="stat-card">
           <div className="stat-icon">🧠</div>
-          <h2>200+</h2>
+          <h2>145+</h2>
           <p>제품 지식 퀴즈</p>
         </div>
         <div className="stat-card">
