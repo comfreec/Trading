@@ -794,30 +794,31 @@
   padding: 15px 20px;
   border-radius: 15px;
   line-height: 1.5;
-  word-wrap: break-word;
-  word-break: break-word;
-  overflow-wrap: break-word;
-  white-space: pre-wrap;
-  overflow: visible;
+  word-wrap: break-word !important;
+  word-break: break-word !important;
+  overflow-wrap: break-word !important;
+  white-space: pre-wrap !important;
+  overflow: visible !important;
   hyphens: auto;
+  text-overflow: clip !important;
 }
 
 .message.customer .message-bubble {
   background: white;
   border: 2px solid #e0e0e0;
-  word-wrap: break-word;
-  word-break: break-word;
-  overflow-wrap: break-word;
-  white-space: pre-wrap;
+  word-wrap: break-word !important;
+  word-break: break-word !important;
+  overflow-wrap: break-word !important;
+  white-space: pre-wrap !important;
 }
 
 .message.agent .message-bubble {
   background: #667eea;
   color: white;
-  word-wrap: break-word;
-  word-break: break-word;
-  overflow-wrap: break-word;
-  white-space: pre-wrap;
+  word-wrap: break-word !important;
+  word-break: break-word !important;
+  overflow-wrap: break-word !important;
+  white-space: pre-wrap !important;
 }
 
 .input-area {
