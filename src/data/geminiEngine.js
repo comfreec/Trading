@@ -97,6 +97,7 @@ export class GeminiEngine {
     this.customerType = customerType
     this.conversationHistory = []
     this.sentiment = 'neutral'
+    this.systemPromptAdded = false // 시스템 프롬프트 추가 여부 추적
     
     // 고객 유형별 페르소나
     this.personas = {
@@ -139,6 +140,22 @@ export class GeminiEngine {
     if (!currentKey) {
       console.error('사용 가능한 Gemini API 키가 없습니다.')
       return '죄송합니다. AI 응답 서비스를 사용할 수 없습니다. API 키를 추가해주세요.'
+    }
+
+    // 첫 메시지일 때만 시스템 프롬프트 추가
+    if (!this.systemPromptAdded) {
+      const persona = this.personas[this.customerType]
+      const systemPrompt = `당신은 코웨이 렌탈 제품에 관심이 있을 수도 있는 ${persona.name}입니다. ${persona.personality} 당신은 고객입니다. 절대로 제품을 설명하거나 판매하지 마세요. 영업사원의 말을 듣고 질문하거나 의심하거나 관심을 보이세요. 짧게 대답하세요 (1-2문장). 100% 한국어로만 대화하세요.`
+      
+      this.conversationHistory.push({
+        role: 'user',
+        parts: [{ text: systemPrompt }]
+      })
+      this.conversationHistory.push({
+        role: 'model',
+        parts: [{ text: '네, 알겠습니다. 고객으로서 자연스럽게 반응하겠습니다.' }]
+      })
+      this.systemPromptAdded = true
     }
 
     this.conversationHistory.push({
@@ -198,66 +215,8 @@ export class GeminiEngine {
   }
 
   async callGeminiAPI(apiKey) {
-    const persona = this.personas[this.customerType]
-    
-    const systemInstruction = `당신은 코웨이 렌탈 제품(공기청정기, 정수기, 비데, 매트리스케어)에 관심이 있을 수도 있는 일반 가정의 고객입니다.
-
-**당신의 정체성:**
-- 당신은 ${persona.name}입니다
-- ${persona.personality}
-- 당신은 영업사원이 아닙니다. 절대로 제품을 판매하거나 설명하지 마세요
-- 당신은 고객입니다. 영업사원의 설명을 듣고 질문하고 반응하는 사람입니다
-
-**당신의 주요 관심사와 걱정:**
-${persona.concerns.map(c => `- ${c}`).join('\n')}
-
-**당신의 대화 스타일:**
-${persona.tone}
-
-**절대 지켜야 할 규칙:**
-1. 당신은 고객입니다. 제품을 설명하거나 판매하지 마세요
-2. 영업사원의 말을 듣고 질문하거나 의심하거나 관심을 보이세요
-3. 짧게 대답하세요 (1-2문장, 최대 3문장)
-4. "음...", "그런데", "아", "근데" 같은 자연스러운 추임새 사용
-5. 너무 쉽게 설득되지 마세요. 현실적인 고객처럼 의심하고 따져보세요
-6. 가격, 품질, 필요성에 대해 계속 의문을 가지세요
-7. 영업사원이 잘 설명하면 조금씩 관심을 보이되, 여전히 신중하세요
-8. 100% 한국어로만 대화하세요
-9. 존댓말 사용 (예: "그렇군요", "그런가요?", "좀 비싼 것 같은데요")
-10. 절대로 제품 기능이나 장점을 먼저 설명하지 마세요 - 당신은 고객입니다!
-
-**현재 상황:**
-- 코웨이 영업사원이 당신 집에 방문했습니다
-- 영업사원이 렌탈 제품을 소개하려고 합니다
-- 당신은 ${persona.name}의 입장에서 반응합니다
-- 현재 감정: ${this.sentiment}
-
-**대화 예시 (당신이 해야 할 반응):**
-- "안녕하세요. 무슨 일로 오셨어요?"
-- "음... 렌탈이요? 비싸지 않나요?"
-- "지금 쓰는 게 있는데 꼭 필요한가요?"
-- "다른 회사 제품이랑 뭐가 다른데요?"
-- "좀 더 생각해볼게요"
-- "그런데 관리는 어떻게 되나요?"
-
-**절대 하지 말아야 할 것:**
-- "저희 제품은..." (당신은 영업사원이 아닙니다!)
-- "이 제품의 장점은..." (당신은 고객입니다!)
-- 제품 기능을 상세히 설명하기
-- 영업 멘트 사용하기
-
-고객으로서 자연스럽게 반응하세요. 영업사원의 말을 듣고 질문하거나 의심하거나 관심을 보이세요.`
-
-    const contents = [
-      {
-        role: 'user',
-        parts: [{ text: systemInstruction }]
-      },
-      ...this.conversationHistory
-    ]
-
     const requestBody = {
-      contents: contents,
+      contents: this.conversationHistory,
       generationConfig: {
         temperature: 0.9,
         topK: 40,

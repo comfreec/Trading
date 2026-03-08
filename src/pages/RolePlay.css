@@ -718,3 +718,17 @@
     flex-direction: column;
   }
 }
+
+/* 핸즈프리 상태를 하단에 고정 */
+.handsfree-status {
+  position: sticky;
+  bottom: 80px;
+  z-index: 50;
+  margin: 0;
+}
+
+@media (max-width: 768px) {
+  .handsfree-status {
+    bottom: 70px;
+  }
+}
