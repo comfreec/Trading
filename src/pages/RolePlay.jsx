@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react'
-import { GeminiEngine, getAPIKeys } from '../data/geminiEngine'
+import { GeminiEngine, getAPIKeys, addAPIKey, removeAPIKey, resetFailedKeys } from '../data/geminiEngine'
+import { ResponseEngine } from '../data/responseEngine'
 import { SalesCoach } from '../data/salesCoach'
 import './RolePlay.css'
 
@@ -10,6 +11,7 @@ function RolePlay() {
   const [newApiKey, setNewApiKey] = useState('')
   const [selectedScenario, setSelectedScenario] = useState(null)
   const [geminiEngine, setGeminiEngine] = useState(null)
+  const [responseEngine, setResponseEngine] = useState(null)
   const [conversation, setConversation] = useState([])
   const [userInput, setUserInput] = useState('')
   const [isListening, setIsListening] = useState(false)
@@ -232,17 +234,36 @@ function RolePlay() {
   const startScenario = async (scenario) => {
     setSelectedScenario(scenario)
     
+    // 시나리오 ID를 고객 유형 ID로 매핑 (ResponseEngine 호환)
+    // 1: 첫 방문 → 가격 민감형(1)
+    // 2: 가격 협상 → 가격 민감형(1)
+    // 3: 제품 비교 → 비교 검토형(3)
+    // 4: 거절 대응 → 빠른 결정형(4)
+    // 5: 클로징 → 품질 중시형(2)
+    // 6: 건강 관심 → 건강 관심형(5)
+    const customerTypeMap = {
+      1: 1, // 첫 방문 → 가격 민감형
+      2: 1, // 가격 협상 → 가격 민감형
+      3: 3, // 제품 비교 → 비교 검토형
+      4: 4, // 거절 대응 → 빠른 결정형
+      5: 2, // 클로징 → 품질 중시형
+      6: 5  // 건강 관심 → 건강 관심형
+    }
+    
+    const customerTypeId = customerTypeMap[scenario.id] || 1
+    
     let greeting = ''
     let engine = null
+    let basicEngine = null
     
     if (useGemini && apiKeys.length > 0) {
       try {
         // Gemini 엔진 생성 (롤플레이용 커스텀 페르소나)
-        engine = new GeminiEngine(scenario.id)
+        engine = new GeminiEngine(customerTypeId)
         
         // 페르소나 오버라이드 - 올바른 형식으로 변환
         if (scenario.persona) {
-          engine.personas[scenario.id] = {
+          engine.personas[customerTypeId] = {
             name: scenario.persona.name || scenario.title,
             role: '롤플레이 고객',
             personality: scenario.persona.personality || '',
@@ -260,16 +281,23 @@ function RolePlay() {
         
         // 성공하면 엔진 설정
         setGeminiEngine(engine)
+        setResponseEngine(null)
       } catch (error) {
         console.error('Gemini 인사 생성 실패:', error)
-        greeting = '안녕하세요. 무슨 일로 오셨나요?'
+        // Gemini 실패 시 기본 엔진 사용
+        basicEngine = new ResponseEngine(customerTypeId)
+        greeting = basicEngine.generateResponse('안녕하세요')
+        console.log('기본 엔진 인사:', greeting)
         setGeminiEngine(null)
+        setResponseEngine(basicEngine)
       }
     } else {
-      // 기본 인사
-      greeting = '안녕하세요. 무슨 일로 오셨나요?'
-      console.log('기본 인사:', greeting)
+      // 기본 응답 엔진 사용
+      basicEngine = new ResponseEngine(customerTypeId)
+      greeting = basicEngine.generateResponse('안녕하세요')
+      console.log('기본 엔진 인사:', greeting)
       setGeminiEngine(null)
+      setResponseEngine(basicEngine)
     }
     
     // 인사 설정
@@ -318,8 +346,12 @@ function RolePlay() {
         console.log('Gemini로 응답 생성 중...')
         customerResponse = await geminiEngine.generateResponse(userInput)
         console.log('Gemini 응답:', customerResponse)
+      } else if (responseEngine) {
+        console.log('기본 응답 엔진 사용')
+        customerResponse = responseEngine.generateResponse(userInput)
+        console.log('기본 응답:', customerResponse)
       } else {
-        console.log('기본 응답 사용 (geminiEngine:', geminiEngine, ')')
+        console.log('응답 엔진 없음 - 기본 메시지')
         customerResponse = '네, 알겠습니다. 그런데 좀 더 자세히 설명해주실 수 있나요?'
       }
     } catch (error) {
@@ -359,6 +391,7 @@ function RolePlay() {
     window.speechSynthesis.cancel()
     setSelectedScenario(null)
     setGeminiEngine(null)
+    setResponseEngine(null)
     setConversation([])
     setUserInput('')
     setHandsFreeMode(true)
