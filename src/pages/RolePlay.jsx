@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react'
 import { GeminiEngine, getAPIKeys } from '../data/geminiEngine'
+import { SalesCoach } from '../data/salesCoach'
 import './RolePlay.css'
 
 function RolePlay() {
@@ -17,6 +18,12 @@ function RolePlay() {
   const [availableVoices, setAvailableVoices] = useState([])
   const [handsFreeMode, setHandsFreeMode] = useState(true)
   const [isWaitingForSpeech, setIsWaitingForSpeech] = useState(false)
+  const [salesCoach] = useState(new SalesCoach())
+  const [evaluations, setEvaluations] = useState([])
+  const [showFeedback, setShowFeedback] = useState(true)
+  const [currentFeedback, setCurrentFeedback] = useState(null)
+  const [showReport, setShowReport] = useState(false)
+  const [finalReport, setFinalReport] = useState(null)
   
   const handsFreeRef = useRef(handsFreeMode)
   const userInputRef = useRef('')
@@ -276,6 +283,19 @@ function RolePlay() {
       { speaker: 'agent', text: userInput }
     ]
 
+    // 실시간 평가
+    const evaluation = salesCoach.evaluateResponse(userInput, selectedScenario.id, {
+      responseCount: conversation.length / 2,
+      sentiment: 'neutral',
+      mentionedTopics: []
+    })
+    
+    const newEvaluations = [...evaluations, evaluation]
+    setEvaluations(newEvaluations)
+    
+    // 피드백 표시
+    setCurrentFeedback(evaluation)
+
     let customerResponse
     try {
       if (useGemini && apiKeys.length > 0 && geminiEngine) {
@@ -288,7 +308,11 @@ function RolePlay() {
       customerResponse = '죄송해요, 제가 잠깐 말문이 막혔네요. 다시 한번 말씀해주시겠어요?'
     }
 
-    newConversation.push({ speaker: 'customer', text: customerResponse })
+    newConversation.push({ 
+      speaker: 'customer', 
+      text: customerResponse,
+      evaluation: evaluation
+    })
     setConversation(newConversation)
     
     setTimeout(() => {
@@ -320,10 +344,45 @@ function RolePlay() {
     setUserInput('')
     setHandsFreeMode(true)
     setIsWaitingForSpeech(false)
+    setEvaluations([])
+    setCurrentFeedback(null)
+    setShowReport(false)
+    setFinalReport(null)
     if (isListening && recognition) {
       recognition.stop()
       setIsListening(false)
     }
+  }
+
+  const endConversation = () => {
+    window.speechSynthesis.cancel()
+    setHandsFreeMode(false)
+    setIsWaitingForSpeech(false)
+    
+    if (isListening && recognition) {
+      recognition.stop()
+      setIsListening(false)
+    }
+    
+    if (evaluations.length === 0) {
+      alert('대화를 먼저 시작해주세요!')
+      return
+    }
+    
+    // 최종 리포트 생성
+    const conversationHistory = conversation.map(msg => ({
+      speaker: msg.speaker,
+      text: msg.text
+    }))
+    
+    const report = salesCoach.generateDetailedReport(
+      conversationHistory,
+      evaluations,
+      selectedScenario.id
+    )
+    
+    setFinalReport(report)
+    setShowReport(true)
   }
 
   const toggleVoiceInput = () => {
@@ -394,6 +453,94 @@ function RolePlay() {
             ))}
           </div>
         </div>
+      ) : showReport ? (
+        <div className="final-report">
+          <div className="report-header">
+            <h2>📊 대화 분석 리포트</h2>
+            <button onClick={resetScenario} className="close-btn">닫기</button>
+          </div>
+          
+          <div className="report-summary">
+            <div className="grade-display" style={{backgroundColor: finalReport.summary.grade.color}}>
+              <div className="grade-letter">{finalReport.summary.grade.grade}</div>
+              <div className="grade-label">{finalReport.summary.grade.label}</div>
+            </div>
+            <div className="summary-stats">
+              <div className="summary-item">
+                <span className="summary-label">총점</span>
+                <span className="summary-value">{finalReport.summary.averageScore}점</span>
+              </div>
+              <div className="summary-item">
+                <span className="summary-label">대화 수</span>
+                <span className="summary-value">{finalReport.summary.totalMessages}회</span>
+              </div>
+            </div>
+          </div>
+          
+          <div className="detailed-scores">
+            <h3>세부 점수</h3>
+            <div className="score-bars">
+              <div className="score-bar-item">
+                <span className="score-label">공감도</span>
+                <div className="score-bar">
+                  <div className="score-fill" style={{width: `${finalReport.detailedScores.empathy}%`}}></div>
+                </div>
+                <span className="score-value">{finalReport.detailedScores.empathy}</span>
+              </div>
+              <div className="score-bar-item">
+                <span className="score-label">설득력</span>
+                <div className="score-bar">
+                  <div className="score-fill" style={{width: `${finalReport.detailedScores.persuasion}%`}}></div>
+                </div>
+                <span className="score-value">{finalReport.detailedScores.persuasion}</span>
+              </div>
+              <div className="score-bar-item">
+                <span className="score-label">전문성</span>
+                <div className="score-bar">
+                  <div className="score-fill" style={{width: `${finalReport.detailedScores.professionalism}%`}}></div>
+                </div>
+                <span className="score-value">{finalReport.detailedScores.professionalism}</span>
+              </div>
+              <div className="score-bar-item">
+                <span className="score-label">타이밍</span>
+                <div className="score-bar">
+                  <div className="score-fill" style={{width: `${finalReport.detailedScores.timing}%`}}></div>
+                </div>
+                <span className="score-value">{finalReport.detailedScores.timing}</span>
+              </div>
+            </div>
+          </div>
+          
+          {finalReport.strengths.length > 0 && (
+            <div className="report-section">
+              <h3>👍 잘한 점</h3>
+              <ul>
+                {finalReport.strengths.map((strength, idx) => (
+                  <li key={idx}>{strength}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+          
+          {finalReport.improvements.length > 0 && (
+            <div className="report-section">
+              <h3>💡 개선할 점</h3>
+              {finalReport.improvements.map((improvement, idx) => (
+                <div key={idx} className="improvement-item">
+                  <h4>{improvement.area}</h4>
+                  <p><strong>문제:</strong> {improvement.issue}</p>
+                  <p><strong>해결:</strong> {improvement.action}</p>
+                  <p className="example"><strong>예시:</strong> {improvement.example}</p>
+                </div>
+              ))}
+            </div>
+          )}
+          
+          <div className="report-actions">
+            <button onClick={resetScenario} className="primary-btn">다른 시나리오 연습하기</button>
+            <button onClick={() => { setShowReport(false); setEvaluations([]); setConversation([]); startScenario(selectedScenario); }} className="secondary-btn">같은 시나리오 다시 연습</button>
+          </div>
+        </div>
       ) : (
         <div className="conversation-container">
           <div className="conversation-header">
@@ -406,10 +553,19 @@ function RolePlay() {
             </div>
             <div className="conversation-actions">
               <button 
+                onClick={() => setShowFeedback(!showFeedback)} 
+                className="feedback-btn"
+              >
+                📊 {showFeedback ? '피드백 숨기기' : '피드백 보기'}
+              </button>
+              <button 
                 onClick={() => setVoiceEnabled(!voiceEnabled)} 
                 className={`voice-toggle-btn ${voiceEnabled ? 'active' : ''}`}
               >
                 {voiceEnabled ? '🔊 음성 켜짐' : '🔇 음성 꺼짐'}
+              </button>
+              <button onClick={endConversation} className="end-btn">
+                ✅ 대화 종료
               </button>
               <button onClick={resetScenario} className="reset-btn">
                 🔄 다시 시작
@@ -447,10 +603,34 @@ function RolePlay() {
               <div key={index} className={`message ${msg.speaker}`}>
                 <div className="message-bubble">
                   {msg.text}
+                  {msg.evaluation && showFeedback && (
+                    <div className="message-score">
+                      점수: {msg.evaluation.totalScore}점
+                    </div>
+                  )}
                 </div>
               </div>
             ))}
           </div>
+
+          {currentFeedback && showFeedback && (
+            <div className="instant-feedback">
+              <div className="feedback-scores">
+                <span className="feedback-score">공감 {currentFeedback.scores.empathy}</span>
+                <span className="feedback-score">설득 {currentFeedback.scores.persuasion}</span>
+                <span className="feedback-score">전문성 {currentFeedback.scores.professionalism}</span>
+                <span className="feedback-score">타이밍 {currentFeedback.scores.timing}</span>
+                <span className="feedback-total">총점 {currentFeedback.totalScore}</span>
+              </div>
+              {currentFeedback.feedback.length > 0 && (
+                <div className="feedback-messages">
+                  {currentFeedback.feedback.map((fb, idx) => (
+                    <div key={idx} className="feedback-msg">{fb}</div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
 
           <div className="input-area">
             {!handsFreeMode && (
