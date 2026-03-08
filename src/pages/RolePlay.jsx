@@ -200,9 +200,19 @@ function RolePlay() {
       if (!isListening && handsFreeMode && !isSpeaking) {
         try {
           recognition.start()
+          setIsWaitingForSpeech(false) // 시작되면 대기 상태 해제
         } catch (error) {
           console.error('자동 음성 인식 시작 실패:', error)
           setIsWaitingForSpeech(false)
+          
+          // 실패하면 1초 후 재시도
+          if (!error.message || !error.message.includes('already started')) {
+            setTimeout(() => {
+              if (handsFreeRef.current && !isListening && !isSpeaking) {
+                startAutoListening()
+              }
+            }, 1000)
+          }
         }
       } else {
         setIsWaitingForSpeech(false)

@@ -289,6 +289,7 @@ function CustomerSimulator() {
         try {
           recognition.start()
           console.log('🎤 핸즈프리: 자동 음성 인식 시작')
+          setIsWaitingForSpeech(false) // 시작되면 대기 상태 해제
         } catch (error) {
           console.error('자동 음성 인식 시작 실패:', error)
           setIsWaitingForSpeech(false)
@@ -296,6 +297,13 @@ function CustomerSimulator() {
           // 모바일에서는 사용자 제스처 필요
           if (error.message && error.message.includes('already started')) {
             console.log('이미 실행 중')
+          } else {
+            // 실패하면 1초 후 재시도
+            setTimeout(() => {
+              if (handsFreeRef.current && !isListening && !isSpeaking) {
+                startAutoListening()
+              }
+            }, 1000)
           }
         }
       } else {
