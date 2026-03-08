@@ -316,7 +316,7 @@ ${persona.tone}
         temperature: 0.9,
         topK: 40,
         topP: 0.95,
-        maxOutputTokens: 500, // 더 긴 응답을 위해 증가
+        maxOutputTokens: 1000, // 긴 응답을 위해 증가
         stopSequences: []
       },
       safetySettings: [
