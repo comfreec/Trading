@@ -424,7 +424,17 @@ function RolePlay() {
 
       {!selectedScenario ? (
         <div className="scenarios-section">
-          <div className="gemini-status-banner">
+          <div className="gemini-status-banner" style={{
+            padding: '20px',
+            background: useGemini && apiKeys.length > 0 
+              ? 'linear-gradient(135deg, #4CAF50 0%, #45a049 100%)' 
+              : 'linear-gradient(135deg, #FF9800 0%, #F57C00 100%)',
+            borderRadius: '10px',
+            marginBottom: '30px',
+            textAlign: 'center',
+            color: 'white',
+            fontWeight: 'bold'
+          }}>
             {useGemini && apiKeys.length > 0 ? (
               <span className="status-active">✅ Gemini AI 활성화 - 실시간 자연스러운 대화</span>
             ) : (
@@ -542,27 +552,27 @@ function RolePlay() {
           </div>
         </div>
       ) : (
-        <div className="conversation-container">
-          <div className="conversation-header">
-            <div className="scenario-info">
-              <span className="scenario-icon-large">{selectedScenario.icon}</span>
+        <div className="simulation-area">
+          <div className="simulation-header">
+            <div className="customer-info">
+              <span className="customer-icon-large">{selectedScenario.icon}</span>
               <div>
                 <h3>{selectedScenario.title}</h3>
                 <p>{selectedScenario.description}</p>
               </div>
             </div>
-            <div className="conversation-actions">
-              <button 
-                onClick={() => setShowFeedback(!showFeedback)} 
-                className="feedback-btn"
-              >
-                📊 {showFeedback ? '피드백 숨기기' : '피드백 보기'}
-              </button>
+            <div className="simulation-actions">
               <button 
                 onClick={() => setVoiceEnabled(!voiceEnabled)} 
                 className={`voice-toggle-btn ${voiceEnabled ? 'active' : ''}`}
               >
                 {voiceEnabled ? '🔊 음성 켜짐' : '🔇 음성 꺼짐'}
+              </button>
+              <button 
+                onClick={() => setShowFeedback(!showFeedback)} 
+                className="feedback-btn"
+              >
+                📊 {showFeedback ? '피드백 숨기기' : '피드백 보기'}
               </button>
               <button onClick={endConversation} className="end-btn">
                 ✅ 대화 종료
@@ -686,6 +696,17 @@ function RolePlay() {
             )}
           </div>
         </div>
+      )}
+
+      {/* 모바일 터치 버튼 - 핸즈프리 모드일 때만 표시 */}
+      {selectedScenario && !showReport && handsFreeMode && (
+        <button 
+          onClick={handleMobileTouchToSpeak}
+          className={`mobile-speak-btn-fixed ${isListening ? 'listening' : ''}`}
+          style={{ display: (isListening || isSpeaking || isWaitingForSpeech) ? 'none' : 'block' }}
+        >
+          🎤 터치하여 말하기
+        </button>
       )}
     </div>
   )

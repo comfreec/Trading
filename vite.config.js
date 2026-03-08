@@ -7,10 +7,14 @@ export default defineConfig({
   build: {
     outDir: 'dist',
     assetsDir: 'assets',
+    minify: 'esbuild',
     rollupOptions: {
       output: {
         manualChunks: undefined
       }
     }
+  },
+  esbuild: {
+    charset: 'utf8'
   }
 })

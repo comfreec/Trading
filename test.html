@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>테스트</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      min-height: 100vh;
+    }
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      background: rgba(255,255,255,0.1);
+      padding: 30px;
+      border-radius: 10px;
+    }
+    h1 { margin-bottom: 20px; }
+    .test-result {
+      background: rgba(255,255,255,0.2);
+      padding: 15px;
+      margin: 10px 0;
+      border-radius: 5px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🎯 코웨이 영업 마스터 - 테스트</h1>
+    <div class="test-result">
+      <h2>✅ HTML 로딩 성공</h2>
+      <p>이 페이지가 보인다면 기본 HTML은 정상입니다.</p>
+    </div>
+    <div class="test-result">
+      <h2>📝 JavaScript 테스트</h2>
+      <p id="js-test">JavaScript 로딩 중...</p>
+    </div>
+    <div class="test-result">
+      <h2>🔗 링크 테스트</h2>
+      <p><a href="/" style="color: white; text-decoration: underline;">메인 앱으로 이동</a></p>
+    </div>
+  </div>
+  <script>
+    document.getElementById('js-test').textContent = '✅ JavaScript 정상 작동!';
+    console.log('테스트 페이지 로드 완료');
+  </script>
+</body>
+</html>
