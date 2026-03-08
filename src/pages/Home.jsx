@@ -32,14 +32,7 @@ function Home() {
       title: '제품 지식 퀴즈',
       description: '145개 문제로 코웨이 전 제품 마스터',
       link: '/quiz',
-      gradient: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)'
-    },
-    {
-      icon: '🛡️',
-      title: '클레임 대응 매뉴얼',
-      description: '상황별 대응 화법과 해결 방안 37개 사례',
-      link: '/claim-guide',
-      gradient: 'linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%)',
+      gradient: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
       badge: 'NEW'
     },
     {
