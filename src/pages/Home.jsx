@@ -54,7 +54,7 @@ function Home() {
     <div className="home">
       <div className="hero">
         <div className="hero-badge">🚀 AI 기반 영업 트레이닝</div>
-        <h1>코웨이 영업 마스터</h1>
+        <h1>코웨이 영업마스터</h1>
         <p className="hero-subtitle">최첨단 AI 기술로 최고의 영업 전문가로 성장하세요</p>
         <div className="hero-features">
           <span className="hero-tag">✨ Gemini AI 대화</span>
