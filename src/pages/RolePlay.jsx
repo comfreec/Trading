@@ -5,7 +5,9 @@ import './RolePlay.css'
 
 function RolePlay() {
   const [useGemini, setUseGemini] = useState(true)
-  const [apiKeys] = useState(getAPIKeys())
+  const [apiKeys, setApiKeys] = useState(getAPIKeys())
+  const [showAPIKeyManager, setShowAPIKeyManager] = useState(false)
+  const [newApiKey, setNewApiKey] = useState('')
   const [selectedScenario, setSelectedScenario] = useState(null)
   const [geminiEngine, setGeminiEngine] = useState(null)
   const [conversation, setConversation] = useState([])
@@ -231,26 +233,31 @@ function RolePlay() {
     setSelectedScenario(scenario)
     
     let greeting = ''
+    let engine = null
     
     if (useGemini && apiKeys.length > 0) {
       try {
         // Gemini 엔진 생성 (롤플레이용 커스텀 페르소나)
-        const engine = new GeminiEngine(scenario.id)
+        engine = new GeminiEngine(scenario.id)
         // 페르소나 오버라이드
         engine.personas[scenario.id] = scenario.persona
-        setGeminiEngine(engine)
         
         // 첫 인사 생성
         greeting = await engine.generateResponse('영업사원이 방문했습니다. 첫 인사를 하세요. 고객으로서 자연스럽게 반응하세요.')
         console.log('Gemini 인사:', greeting)
+        
+        // 성공하면 엔진 설정
+        setGeminiEngine(engine)
       } catch (error) {
         console.error('Gemini 인사 생성 실패:', error)
         greeting = '안녕하세요. 무슨 일로 오셨나요?'
+        setGeminiEngine(null)
       }
     } else {
       // 기본 인사
       greeting = '안녕하세요. 무슨 일로 오셨나요?'
       console.log('기본 인사:', greeting)
+      setGeminiEngine(null)
     }
     
     // 인사 설정
@@ -296,8 +303,11 @@ function RolePlay() {
     let customerResponse
     try {
       if (useGemini && apiKeys.length > 0 && geminiEngine) {
+        console.log('Gemini로 응답 생성 중...')
         customerResponse = await geminiEngine.generateResponse(userInput)
+        console.log('Gemini 응답:', customerResponse)
       } else {
+        console.log('기본 응답 사용 (geminiEngine:', geminiEngine, ')')
         customerResponse = '네, 알겠습니다. 그런데 좀 더 자세히 설명해주실 수 있나요?'
       }
     } catch (error) {
@@ -412,6 +422,31 @@ function RolePlay() {
     }
   }
 
+  const handleAddAPIKey = () => {
+    if (newApiKey.trim()) {
+      const success = addAPIKey(newApiKey.trim())
+      if (success) {
+        setApiKeys(getAPIKeys())
+        setNewApiKey('')
+        alert('✅ API 키가 추가되었습니다!')
+      } else {
+        alert('⚠️ 이미 존재하는 키입니다.')
+      }
+    }
+  }
+
+  const handleRemoveAPIKey = (key) => {
+    if (confirm('이 API 키를 삭제하시겠습니까?')) {
+      removeAPIKey(key)
+      setApiKeys(getAPIKeys())
+    }
+  }
+
+  const handleResetFailedKeys = () => {
+    resetFailedKeys()
+    alert('✅ 실패한 키가 초기화되었습니다!')
+  }
+
   return (
     <div className="roleplay">
       <div className="roleplay-header">
@@ -421,21 +456,219 @@ function RolePlay() {
 
       {!selectedScenario ? (
         <div className="scenarios-section">
-          <div className="gemini-status-banner" style={{
-            padding: '20px',
-            background: useGemini && apiKeys.length > 0 
-              ? 'linear-gradient(135deg, #4CAF50 0%, #45a049 100%)' 
-              : 'linear-gradient(135deg, #FF9800 0%, #F57C00 100%)',
-            borderRadius: '10px',
+          {/* Gemini AI 설정 패널 */}
+          <div className="gemini-settings-panel" style={{
+            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+            padding: '25px',
+            borderRadius: '15px',
             marginBottom: '30px',
-            textAlign: 'center',
             color: 'white',
-            fontWeight: 'bold'
+            boxShadow: '0 4px 15px rgba(102, 126, 234, 0.3)'
           }}>
-            {useGemini && apiKeys.length > 0 ? (
-              <span className="status-active">✅ Gemini AI 활성화 - 실시간 자연스러운 대화</span>
-            ) : (
-              <span className="status-warning">⚠️ Gemini API 키를 추가하면 더 자연스러운 대화가 가능합니다</span>
+            <div className="gemini-header" style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              marginBottom: '15px',
+              flexWrap: 'wrap',
+              gap: '15px'
+            }}>
+              <div className="gemini-title" style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '15px'
+              }}>
+                <span className="gemini-icon" style={{ fontSize: '32px' }}>🤖</span>
+                <h3 style={{ margin: 0, color: 'white', fontSize: '20px' }}>Gemini AI 대화 엔진</h3>
+                <button 
+                  onClick={() => setUseGemini(!useGemini)}
+                  className="gemini-toggle"
+                  style={{
+                    padding: '8px 20px',
+                    background: useGemini ? 'white' : 'rgba(255, 255, 255, 0.2)',
+                    color: useGemini ? '#667eea' : 'white',
+                    border: '2px solid white',
+                    borderRadius: '25px',
+                    fontSize: '14px',
+                    fontWeight: 'bold',
+                    cursor: 'pointer'
+                  }}
+                >
+                  {useGemini ? 'ON' : 'OFF'}
+                </button>
+              </div>
+              <button 
+                onClick={() => setShowAPIKeyManager(!showAPIKeyManager)}
+                className="api-key-manager-btn"
+                style={{
+                  padding: '10px 20px',
+                  background: 'white',
+                  color: '#667eea',
+                  border: 'none',
+                  borderRadius: '8px',
+                  fontSize: '14px',
+                  fontWeight: 'bold',
+                  cursor: 'pointer'
+                }}
+              >
+                {showAPIKeyManager ? '설정 닫기' : 'API 키 관리'}
+              </button>
+            </div>
+            
+            <div className="gemini-status" style={{
+              padding: '12px 20px',
+              background: 'rgba(255, 255, 255, 0.15)',
+              borderRadius: '8px',
+              textAlign: 'center',
+              fontSize: '14px'
+            }}>
+              {useGemini ? (
+                apiKeys.length > 0 ? (
+                  <span style={{
+                    color: '#4CAF50',
+                    fontWeight: 'bold',
+                    background: 'white',
+                    padding: '8px 16px',
+                    borderRadius: '20px',
+                    display: 'inline-block'
+                  }}>✅ Gemini AI 활성화 ({apiKeys.length}개 키 등록됨)</span>
+                ) : (
+                  <span style={{
+                    color: '#FF9800',
+                    fontWeight: 'bold',
+                    background: 'white',
+                    padding: '8px 16px',
+                    borderRadius: '20px',
+                    display: 'inline-block'
+                  }}>⚠️ API 키를 추가해주세요</span>
+                )
+              ) : (
+                <span style={{ color: 'white', opacity: 0.8 }}>기본 응답 엔진 사용 중</span>
+              )}
+            </div>
+
+            {showAPIKeyManager && (
+              <div className="api-key-manager" style={{
+                marginTop: '20px',
+                padding: '20px',
+                background: 'white',
+                borderRadius: '10px',
+                color: '#333'
+              }}>
+                <div className="api-key-input-section" style={{
+                  display: 'flex',
+                  gap: '10px',
+                  marginBottom: '20px'
+                }}>
+                  <input
+                    type="text"
+                    value={newApiKey}
+                    onChange={(e) => setNewApiKey(e.target.value)}
+                    placeholder="Gemini API 키를 입력하세요 (AIza...)"
+                    style={{
+                      flex: 1,
+                      padding: '12px 16px',
+                      border: '2px solid #e0e0e0',
+                      borderRadius: '8px',
+                      fontSize: '14px'
+                    }}
+                    onKeyDown={(e) => e.key === 'Enter' && handleAddAPIKey()}
+                  />
+                  <button onClick={handleAddAPIKey} style={{
+                    padding: '12px 24px',
+                    background: '#4CAF50',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '8px',
+                    fontSize: '14px',
+                    fontWeight: 'bold',
+                    cursor: 'pointer'
+                  }}>
+                    ➕ 추가
+                  </button>
+                </div>
+
+                {apiKeys.length > 0 ? (
+                  <div className="api-key-list">
+                    <div style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      marginBottom: '15px',
+                      paddingBottom: '10px',
+                      borderBottom: '2px solid #e0e0e0'
+                    }}>
+                      <span style={{ fontWeight: 'bold', color: '#333' }}>등록된 API 키 ({apiKeys.length}개)</span>
+                      <button onClick={handleResetFailedKeys} style={{
+                        padding: '6px 12px',
+                        background: '#FF9800',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '5px',
+                        fontSize: '12px',
+                        cursor: 'pointer'
+                      }}>
+                        🔄 실패 키 초기화
+                      </button>
+                    </div>
+                    {apiKeys.map((key, index) => (
+                      <div key={index} style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '15px',
+                        padding: '12px 15px',
+                        background: '#f8f9fa',
+                        borderRadius: '8px',
+                        marginBottom: '10px'
+                      }}>
+                        <span style={{ fontWeight: 'bold', color: '#667eea', minWidth: '30px' }}>#{index + 1}</span>
+                        <span style={{ flex: 1, fontFamily: 'monospace', fontSize: '13px', color: '#666' }}>
+                          {key.substring(0, 15)}...{key.substring(key.length - 4)}
+                        </span>
+                        <button 
+                          onClick={() => handleRemoveAPIKey(key)}
+                          style={{
+                            padding: '6px 12px',
+                            background: '#f44336',
+                            color: 'white',
+                            border: 'none',
+                            borderRadius: '5px',
+                            fontSize: '16px',
+                            cursor: 'pointer'
+                          }}
+                        >
+                          🗑️
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div style={{ textAlign: 'center', padding: '30px', color: '#666' }}>
+                    <p>📝 등록된 API 키가 없습니다</p>
+                    <p style={{ fontSize: '14px', color: '#999' }}>
+                      <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer" style={{ color: '#667eea', textDecoration: 'none', fontWeight: 'bold' }}>
+                        Google AI Studio
+                      </a>에서 무료 API 키를 발급받으세요
+                    </p>
+                  </div>
+                )}
+
+                <div style={{
+                  padding: '15px',
+                  background: '#e3f2fd',
+                  borderRadius: '8px',
+                  borderLeft: '4px solid #2196F3',
+                  marginTop: '15px'
+                }}>
+                  <h4 style={{ margin: '0 0 10px 0', color: '#1976D2', fontSize: '16px' }}>💡 API 키 로테이션 시스템</h4>
+                  <ul style={{ margin: 0, paddingLeft: '20px', color: '#555' }}>
+                    <li style={{ margin: '8px 0', lineHeight: 1.5, fontSize: '13px' }}>여러 개의 API 키를 등록하면 자동으로 순환하며 사용합니다</li>
+                    <li style={{ margin: '8px 0', lineHeight: 1.5, fontSize: '13px' }}>한 키가 한도 초과 시 자동으로 다음 키로 전환됩니다</li>
+                    <li style={{ margin: '8px 0', lineHeight: 1.5, fontSize: '13px' }}>모든 키는 브라우저에 안전하게 저장됩니다</li>
+                    <li style={{ margin: '8px 0', lineHeight: 1.5, fontSize: '13px' }}>Gemini 2.5 Flash는 무료로 사용 가능합니다</li>
+                  </ul>
+                </div>
+              </div>
             )}
           </div>
 
