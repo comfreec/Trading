@@ -239,8 +239,20 @@ function RolePlay() {
       try {
         // Gemini 엔진 생성 (롤플레이용 커스텀 페르소나)
         engine = new GeminiEngine(scenario.id)
-        // 페르소나 오버라이드
-        engine.personas[scenario.id] = scenario.persona
+        
+        // 페르소나 오버라이드 - 올바른 형식으로 변환
+        if (scenario.persona) {
+          engine.personas[scenario.id] = {
+            name: scenario.persona.name || scenario.title,
+            role: '롤플레이 고객',
+            personality: scenario.persona.personality || '',
+            background: '영업 연습 시나리오',
+            concerns: scenario.persona.concerns || [],
+            objections: scenario.persona.concerns || [],
+            tone: scenario.persona.tone || '자연스럽게 대화합니다',
+            behaviorRules: scenario.persona.personality || ''
+          }
+        }
         
         // 첫 인사 생성
         greeting = await engine.generateResponse('영업사원이 방문했습니다. 첫 인사를 하세요. 고객으로서 자연스럽게 반응하세요.')
