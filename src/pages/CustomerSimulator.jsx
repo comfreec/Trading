@@ -535,10 +535,22 @@ function CustomerSimulator() {
 
     // 응답 생성 (Gemini는 비동기)
     let customerResponse
-    if (useGemini && apiKeys.length > 0) {
-      customerResponse = await responseEngine.generateResponse(userInput)
-    } else {
-      customerResponse = responseEngine.generateResponse(userInput)
+    try {
+      if (useGemini && apiKeys.length > 0) {
+        customerResponse = await responseEngine.generateResponse(userInput)
+      } else {
+        customerResponse = responseEngine.generateResponse(userInput)
+      }
+    } catch (error) {
+      console.error('응답 생성 오류:', error)
+      customerResponse = '죄송해요, 제가 잠깐 말문이 막혔네요. 다시 한번 말씀해주시겠어요?'
+      
+      // 에러 메시지 표시
+      setStatusMessage({ 
+        type: 'error', 
+        text: '⚠️ AI 응답 생성 실패. API 키를 확인해주세요.' 
+      })
+      setTimeout(() => setStatusMessage(null), 3000)
     }
     
     newConversation.push({ 

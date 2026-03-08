@@ -277,10 +277,15 @@ function RolePlay() {
     ]
 
     let customerResponse
-    if (useGemini && apiKeys.length > 0 && geminiEngine) {
-      customerResponse = await geminiEngine.generateResponse(userInput)
-    } else {
-      customerResponse = '네, 알겠습니다. 그런데 좀 더 자세히 설명해주실 수 있나요?'
+    try {
+      if (useGemini && apiKeys.length > 0 && geminiEngine) {
+        customerResponse = await geminiEngine.generateResponse(userInput)
+      } else {
+        customerResponse = '네, 알겠습니다. 그런데 좀 더 자세히 설명해주실 수 있나요?'
+      }
+    } catch (error) {
+      console.error('응답 생성 오류:', error)
+      customerResponse = '죄송해요, 제가 잠깐 말문이 막혔네요. 다시 한번 말씀해주시겠어요?'
     }
 
     newConversation.push({ speaker: 'customer', text: customerResponse })

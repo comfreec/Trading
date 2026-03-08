@@ -187,7 +187,13 @@ export class GeminiEngine {
         }
       }
       
-      return '죄송합니다. 잠시 생각할 시간을 주세요...'
+      // 모든 키가 실패하면 기본 응답 반환
+      const fallbackResponse = '음... 잠깐만요. 제가 좀 생각을 정리할 시간이 필요할 것 같아요. 다시 한번 말씀해주시겠어요?'
+      this.conversationHistory.push({
+        role: 'model',
+        parts: [{ text: fallbackResponse }]
+      })
+      return fallbackResponse
     }
   }
 
