@@ -1,5 +1,6 @@
 import React, { useState, useRef, useCallback } from 'react'
 import { ResponseEngine } from '../data/responseEngine'
+import { GeminiEngine, getAPIKeys, addAPIKey, removeAPIKey, resetFailedKeys } from '../data/geminiEngine'
 import { SalesCoach } from '../data/salesCoach'
 import { MissionTracker } from '../data/missionSystem'
 import { LevelSystem } from '../data/levelSystem'
@@ -7,6 +8,10 @@ import './CustomerSimulator.css'
 
 function CustomerSimulator() {
   const [responseEngine, setResponseEngine] = useState(null)
+  const [useGemini, setUseGemini] = useState(true) // Gemini 사용 여부
+  const [showAPIKeyManager, setShowAPIKeyManager] = useState(false)
+  const [apiKeys, setApiKeys] = useState(getAPIKeys())
+  const [newApiKey, setNewApiKey] = useState('')
   const [salesCoach] = useState(new SalesCoach())
   const [missionTracker] = useState(new MissionTracker())
   const [levelSystem] = useState(new LevelSystem())
@@ -400,25 +405,37 @@ function CustomerSimulator() {
   const startSimulation = (customer) => {
     setSelectedCustomer(customer)
     
-    // 새로운 응답 엔진 생성
-    const engine = new ResponseEngine(customer.id)
+    // Gemini 또는 기본 응답 엔진 생성
+    const engine = useGemini && apiKeys.length > 0 
+      ? new GeminiEngine(customer.id)
+      : new ResponseEngine(customer.id)
+    
     setResponseEngine(engine)
     
     // 첫 인사 생성
-    const greeting = engine.generateResponse('안녕하세요')
-    
-    setConversation([
-      { speaker: 'customer', text: greeting }
-    ])
-    
-    // 음성으로 인사 후 핸즈프리면 자동으로 음성 인식 시작
-    setTimeout(() => {
-      speakText(greeting, () => {
-        if (handsFreeMode) {
-          startAutoListening()
-        }
+    if (useGemini && apiKeys.length > 0) {
+      // Gemini는 비동기이므로 별도 처리
+      engine.generateResponse('안녕하세요').then(greeting => {
+        setConversation([{ speaker: 'customer', text: greeting }])
+        setTimeout(() => {
+          speakText(greeting, () => {
+            if (handsFreeMode) {
+              startAutoListening()
+            }
+          })
+        }, 500)
       })
-    }, 500)
+    } else {
+      const greeting = engine.generateResponse('안녕하세요')
+      setConversation([{ speaker: 'customer', text: greeting }])
+      setTimeout(() => {
+        speakText(greeting, () => {
+          if (handsFreeMode) {
+            startAutoListening()
+          }
+        })
+      }, 500)
+    }
     
     setConversationState({
       stage: 'initial',
@@ -434,10 +451,40 @@ function CustomerSimulator() {
     
     // 활성 미션 로드
     const missions = missionTracker.getAvailableMissions()
-    setActiveMissions(missions.slice(0, 3)) // 상위 3개만 표시
+    setActiveMissions(missions.slice(0, 3))
   }
 
-  const handleSendMessage = () => {
+  const handleAddAPIKey = () => {
+    if (newApiKey.trim()) {
+      const success = addAPIKey(newApiKey.trim())
+      if (success) {
+        setApiKeys(getAPIKeys())
+        setNewApiKey('')
+        setStatusMessage({ type: 'success', text: '✅ API 키가 추가되었습니다!' })
+        setTimeout(() => setStatusMessage(null), 2000)
+      } else {
+        setStatusMessage({ type: 'warning', text: '⚠️ 이미 존재하는 키입니다.' })
+        setTimeout(() => setStatusMessage(null), 2000)
+      }
+    }
+  }
+
+  const handleRemoveAPIKey = (key) => {
+    if (confirm('이 API 키를 삭제하시겠습니까?')) {
+      removeAPIKey(key)
+      setApiKeys(getAPIKeys())
+      setStatusMessage({ type: 'info', text: 'API 키가 삭제되었습니다.' })
+      setTimeout(() => setStatusMessage(null), 2000)
+    }
+  }
+
+  const handleResetFailedKeys = () => {
+    resetFailedKeys()
+    setStatusMessage({ type: 'success', text: '✅ 실패한 키가 초기화되었습니다!' })
+    setTimeout(() => setStatusMessage(null), 2000)
+  }
+
+  const handleSendMessage = async () => {
     if (!userInput.trim() || !responseEngine) return
 
     console.log('📤 메시지 전송:', userInput)
@@ -460,8 +507,14 @@ function CustomerSimulator() {
     // 피드백 표시
     setCurrentFeedback(evaluation)
 
-    // 새로운 응답 엔진 사용
-    const customerResponse = responseEngine.generateResponse(userInput)
+    // 응답 생성 (Gemini는 비동기)
+    let customerResponse
+    if (useGemini && apiKeys.length > 0) {
+      customerResponse = await responseEngine.generateResponse(userInput)
+    } else {
+      customerResponse = responseEngine.generateResponse(userInput)
+    }
+    
     newConversation.push({ 
       speaker: 'customer', 
       text: customerResponse,
@@ -481,7 +534,7 @@ function CustomerSimulator() {
     
     const newState = {
       stage: responseEngine.sentiment,
-      mentionedTopics: Array.from(responseEngine.mentionedTopics),
+      mentionedTopics: Array.from(responseEngine.mentionedTopics || []),
       responseCount: responseEngine.responseCount
     }
     setConversationState(newState)
@@ -490,7 +543,7 @@ function CustomerSimulator() {
     const conversationData = {
       messageCount: responseEngine.responseCount,
       sentiment: responseEngine.sentiment,
-      mentionedTopics: Array.from(responseEngine.mentionedTopics),
+      mentionedTopics: Array.from(responseEngine.mentionedTopics || []),
       customerType: selectedCustomer.id,
       averageScore: Math.round(newEvaluations.reduce((sum, e) => sum + e.totalScore, 0) / newEvaluations.length),
       empathyScore: Math.round(newEvaluations.reduce((sum, e) => sum + e.scores.empathy, 0) / newEvaluations.length),
@@ -516,7 +569,8 @@ function CustomerSimulator() {
       setExpGained(expGained + totalExp)
       
       if (expResult.leveledUp) {
-        alert(`🎉 레벨업! ${expResult.newLevel.title}이 되었습니다!`)
+        setStatusMessage({ type: 'success', text: `🎉 레벨업! ${expResult.newLevel.title}이 되었습니다!` })
+        setTimeout(() => setStatusMessage(null), 3000)
       }
     }
     
@@ -721,6 +775,101 @@ function CustomerSimulator() {
       {!selectedCustomer ? (
         <div className="customer-selection">
           <h2>고객 유형을 선택하세요</h2>
+          
+          {/* Gemini AI 설정 패널 */}
+          <div className="gemini-settings-panel">
+            <div className="gemini-header">
+              <div className="gemini-title">
+                <span className="gemini-icon">🤖</span>
+                <h3>Gemini AI 대화 엔진</h3>
+                <button 
+                  onClick={() => setUseGemini(!useGemini)}
+                  className={`gemini-toggle ${useGemini ? 'active' : ''}`}
+                >
+                  {useGemini ? 'ON' : 'OFF'}
+                </button>
+              </div>
+              <button 
+                onClick={() => setShowAPIKeyManager(!showAPIKeyManager)}
+                className="api-key-manager-btn"
+              >
+                {showAPIKeyManager ? '설정 닫기' : 'API 키 관리'}
+              </button>
+            </div>
+            
+            <div className="gemini-status">
+              {useGemini ? (
+                apiKeys.length > 0 ? (
+                  <span className="status-active">✅ Gemini AI 활성화 ({apiKeys.length}개 키 등록됨)</span>
+                ) : (
+                  <span className="status-warning">⚠️ API 키를 추가해주세요</span>
+                )
+              ) : (
+                <span className="status-inactive">기본 응답 엔진 사용 중</span>
+              )}
+            </div>
+
+            {showAPIKeyManager && (
+              <div className="api-key-manager">
+                <div className="api-key-input-section">
+                  <input
+                    type="text"
+                    value={newApiKey}
+                    onChange={(e) => setNewApiKey(e.target.value)}
+                    placeholder="Gemini API 키를 입력하세요 (AIza...)"
+                    className="api-key-input"
+                    onKeyDown={(e) => e.key === 'Enter' && handleAddAPIKey()}
+                  />
+                  <button onClick={handleAddAPIKey} className="add-key-btn">
+                    ➕ 추가
+                  </button>
+                </div>
+
+                {apiKeys.length > 0 ? (
+                  <div className="api-key-list">
+                    <div className="api-key-list-header">
+                      <span>등록된 API 키 ({apiKeys.length}개)</span>
+                      <button onClick={handleResetFailedKeys} className="reset-failed-btn" title="실패한 키 초기화">
+                        🔄 실패 키 초기화
+                      </button>
+                    </div>
+                    {apiKeys.map((key, index) => (
+                      <div key={index} className="api-key-item">
+                        <span className="key-index">#{index + 1}</span>
+                        <span className="key-preview">{key.substring(0, 15)}...{key.substring(key.length - 4)}</span>
+                        <button 
+                          onClick={() => handleRemoveAPIKey(key)}
+                          className="remove-key-btn"
+                          title="삭제"
+                        >
+                          🗑️
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="no-keys-message">
+                    <p>📝 등록된 API 키가 없습니다</p>
+                    <p className="help-text">
+                      <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer">
+                        Google AI Studio
+                      </a>에서 무료 API 키를 발급받으세요
+                    </p>
+                  </div>
+                )}
+
+                <div className="api-key-info">
+                  <h4>💡 API 키 로테이션 시스템</h4>
+                  <ul>
+                    <li>여러 개의 API 키를 등록하면 자동으로 순환하며 사용합니다</li>
+                    <li>한 키가 한도 초과 시 자동으로 다음 키로 전환됩니다</li>
+                    <li>모든 키는 브라우저에 안전하게 저장됩니다</li>
+                    <li>Gemini 2.5 Flash는 무료로 사용 가능합니다</li>
+                  </ul>
+                </div>
+              </div>
+            )}
+          </div>
           
           {micPermission !== 'granted' && (
             <div className="mic-permission-banner">

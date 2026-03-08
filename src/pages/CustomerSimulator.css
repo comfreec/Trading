@@ -1373,3 +1373,332 @@
     padding: 10px;
   }
 }
+
+/* Gemini AI 설정 패널 */
+.gemini-settings-panel {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 25px;
+  border-radius: 15px;
+  margin-bottom: 30px;
+  color: white;
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+}
+
+.gemini-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+  flex-wrap: wrap;
+  gap: 15px;
+}
+
+.gemini-title {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.gemini-icon {
+  font-size: 32px;
+}
+
+.gemini-title h3 {
+  margin: 0;
+  color: white;
+  font-size: 20px;
+}
+
+.gemini-toggle {
+  padding: 8px 20px;
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  border: 2px solid white;
+  border-radius: 25px;
+  font-size: 14px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.gemini-toggle.active {
+  background: white;
+  color: #667eea;
+}
+
+.gemini-toggle:hover {
+  transform: scale(1.05);
+}
+
+.api-key-manager-btn {
+  padding: 10px 20px;
+  background: white;
+  color: #667eea;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.api-key-manager-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.gemini-status {
+  padding: 12px 20px;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 8px;
+  text-align: center;
+  font-size: 14px;
+}
+
+.status-active {
+  color: #4CAF50;
+  font-weight: bold;
+  background: white;
+  padding: 8px 16px;
+  border-radius: 20px;
+  display: inline-block;
+}
+
+.status-warning {
+  color: #FF9800;
+  font-weight: bold;
+  background: white;
+  padding: 8px 16px;
+  border-radius: 20px;
+  display: inline-block;
+}
+
+.status-inactive {
+  color: white;
+  opacity: 0.8;
+}
+
+/* API 키 관리자 */
+.api-key-manager {
+  margin-top: 20px;
+  padding: 20px;
+  background: white;
+  border-radius: 10px;
+  color: #333;
+}
+
+.api-key-input-section {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.api-key-input {
+  flex: 1;
+  padding: 12px 16px;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.3s ease;
+}
+
+.api-key-input:focus {
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.add-key-btn {
+  padding: 12px 24px;
+  background: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+}
+
+.add-key-btn:hover {
+  background: #45a049;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+}
+
+.api-key-list {
+  margin-bottom: 20px;
+}
+
+.api-key-list-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid #e0e0e0;
+}
+
+.api-key-list-header span {
+  font-weight: bold;
+  color: #333;
+}
+
+.reset-failed-btn {
+  padding: 6px 12px;
+  background: #FF9800;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.reset-failed-btn:hover {
+  background: #F57C00;
+  transform: translateY(-1px);
+}
+
+.api-key-item {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 12px 15px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  margin-bottom: 10px;
+  transition: all 0.3s ease;
+}
+
+.api-key-item:hover {
+  background: #e9ecef;
+  transform: translateX(5px);
+}
+
+.key-index {
+  font-weight: bold;
+  color: #667eea;
+  min-width: 30px;
+}
+
+.key-preview {
+  flex: 1;
+  font-family: 'Courier New', monospace;
+  font-size: 13px;
+  color: #666;
+}
+
+.remove-key-btn {
+  padding: 6px 12px;
+  background: #f44336;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.remove-key-btn:hover {
+  background: #d32f2f;
+  transform: scale(1.1);
+}
+
+.no-keys-message {
+  text-align: center;
+  padding: 30px;
+  color: #666;
+}
+
+.no-keys-message p {
+  margin: 10px 0;
+}
+
+.help-text {
+  font-size: 14px;
+  color: #999;
+}
+
+.help-text a {
+  color: #667eea;
+  text-decoration: none;
+  font-weight: bold;
+}
+
+.help-text a:hover {
+  text-decoration: underline;
+}
+
+.api-key-info {
+  padding: 15px;
+  background: #e3f2fd;
+  border-radius: 8px;
+  border-left: 4px solid #2196F3;
+}
+
+.api-key-info h4 {
+  margin: 0 0 10px 0;
+  color: #1976D2;
+  font-size: 16px;
+}
+
+.api-key-info ul {
+  margin: 0;
+  padding-left: 20px;
+  color: #555;
+}
+
+.api-key-info li {
+  margin: 8px 0;
+  line-height: 1.5;
+  font-size: 13px;
+}
+
+/* 반응형 - Gemini 설정 */
+@media (max-width: 768px) {
+  .gemini-settings-panel {
+    padding: 20px;
+  }
+  
+  .gemini-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .gemini-title {
+    justify-content: center;
+  }
+  
+  .api-key-manager-btn {
+    width: 100%;
+  }
+  
+  .api-key-input-section {
+    flex-direction: column;
+  }
+  
+  .add-key-btn {
+    width: 100%;
+  }
+  
+  .api-key-list-header {
+    flex-direction: column;
+    gap: 10px;
+    align-items: stretch;
+  }
+  
+  .reset-failed-btn {
+    width: 100%;
+  }
+  
+  .api-key-item {
+    flex-wrap: wrap;
+  }
+  
+  .key-preview {
+    width: 100%;
+    word-break: break-all;
+  }
+}
