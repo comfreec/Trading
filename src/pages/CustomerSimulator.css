@@ -1702,3 +1702,17 @@
     word-break: break-all;
   }
 }
+
+/* 핸즈프리 터치 영역 강조 */
+.handsfree-status[style*="pointer"] {
+  transition: all 0.3s ease;
+}
+
+.handsfree-status[style*="pointer"]:hover {
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.15) 0%, rgba(118, 75, 162, 0.15) 100%);
+  transform: scale(1.02);
+}
+
+.handsfree-status[style*="pointer"]:active {
+  transform: scale(0.98);
+}

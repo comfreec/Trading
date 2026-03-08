@@ -231,7 +231,7 @@ function RolePlay() {
       setGeminiEngine(engine)
       
       // 첫 인사 생성
-      const greeting = await engine.generateResponse('안녕하세요')
+      const greeting = await engine.generateResponse('영업사원이 방문했습니다. 첫 인사를 하세요. 고객으로서 자연스럽게 반응하세요.')
       setConversation([{ speaker: 'customer', text: greeting }])
       
       // 대화창으로 자동 스크롤
@@ -418,7 +418,11 @@ function RolePlay() {
           </div>
 
           {handsFreeMode && (
-            <div className="handsfree-status">
+            <div 
+              className="handsfree-status"
+              onClick={handleMobileTouchToSpeak}
+              style={{ cursor: (!isListening && !isSpeaking && !isWaitingForSpeech) ? 'pointer' : 'default' }}
+            >
               <div className="status-indicator">
                 {isSpeaking ? (
                   <span className="status-speaking">🔊 고객이 말하는 중...</span>
@@ -427,14 +431,14 @@ function RolePlay() {
                 ) : isListening ? (
                   <span className="status-listening">🎤 당신 차례입니다. 말씀하세요!</span>
                 ) : (
-                  <span className="status-ready">✅ 준비됨</span>
+                  <span className="status-ready">✅ 대화 준비 완료 - 화면 터치하여 시작</span>
                 )}
               </div>
-              {/iPhone|iPad|iPod|Android/i.test(navigator.userAgent) && !isListening && !isSpeaking && (
-                <button onClick={handleMobileTouchToSpeak} className="mobile-speak-btn">
-                  👆 터치하여 말하기
-                </button>
-              )}
+              <p className="handsfree-tip">
+                {/iPhone|iPad|iPod|Android/i.test(navigator.userAgent) 
+                  ? '💡 화면을 터치하면 음성 인식이 시작됩니다' 
+                  : '💡 핸즈프리 모드: 버튼 없이 자연스럽게 대화하세요'}
+              </p>
             </div>
           )}
 
