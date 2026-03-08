@@ -246,7 +246,7 @@ function CustomerSimulator() {
       utterance.voice = selectedVoice
     }
     utterance.lang = 'ko-KR'
-    utterance.rate = 1.0 // 속도 (0.1 ~ 10)
+    utterance.rate = 1.2 // 속도 (0.1 ~ 10) - 약간 빠르게
     utterance.pitch = 1.0 // 음높이 (0 ~ 2)
     utterance.volume = 1.0 // 볼륨 (0 ~ 1)
 

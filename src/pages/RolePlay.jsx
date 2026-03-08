@@ -186,7 +186,7 @@ function RolePlay() {
     
     if (selectedVoice) utterance.voice = selectedVoice
     utterance.lang = 'ko-KR'
-    utterance.rate = 1.0
+    utterance.rate = 1.2 // 속도 약간 빠르게
     utterance.pitch = 1.0
     utterance.volume = 1.0
 
