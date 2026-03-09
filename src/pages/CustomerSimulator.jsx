@@ -109,31 +109,48 @@ function CustomerSimulator() {
     try {
       const recognitionInstance = new SpeechRecognition()
       
-      recognitionInstance.continuous = false
+      recognitionInstance.continuous = true // 계속 듣기 모드
       recognitionInstance.interimResults = true
       recognitionInstance.lang = 'ko-KR'
       recognitionInstance.maxAlternatives = 1
       
+      let finalTranscript = ''
+      let silenceTimer = null
+      
       recognitionInstance.onstart = () => {
         console.log('🎤 음성 인식 시작됨')
         setIsListening(true)
+        finalTranscript = ''
       }
       
       recognitionInstance.onresult = (event) => {
         console.log('📝 음성 인식 결과:', event)
         
-        let transcript = ''
+        let interimTranscript = ''
+        
         for (let i = event.resultIndex; i < event.results.length; i++) {
-          transcript += event.results[i][0].transcript
+          const transcript = event.results[i][0].transcript
+          if (event.results[i].isFinal) {
+            finalTranscript += transcript
+          } else {
+            interimTranscript += transcript
+          }
         }
         
-        console.log('인식된 텍스트:', transcript)
-        setUserInput(transcript)
-        userInputRef.current = transcript
+        const fullTranscript = finalTranscript + interimTranscript
+        console.log('인식된 텍스트:', fullTranscript)
+        setUserInput(fullTranscript)
+        userInputRef.current = fullTranscript
         
-        if (event.results[event.results.length - 1].isFinal) {
-          console.log('✅ 최종 결과 확정')
-        }
+        // 침묵 타이머 리셋 - 말이 끝나고 2초 후 자동 전송
+        if (silenceTimer) clearTimeout(silenceTimer)
+        
+        silenceTimer = setTimeout(() => {
+          if (finalTranscript.trim()) {
+            console.log('✅ 침묵 감지 - 말이 끝난 것으로 판단')
+            recognitionInstance.stop()
+          }
+        }, 2000) // 2초 침묵 후 종료
       }
       
       recognitionInstance.onerror = (event) => {
