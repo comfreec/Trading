@@ -7,6 +7,7 @@ import ProductQuiz from './pages/ProductQuiz'
 import RolePlay from './pages/RolePlay'
 import Community from './pages/Community'
 import Admin from './pages/Admin'
+import ConversationHistory from './pages/ConversationHistory'
 import './App.css'
 
 // 에러 바운더리
@@ -58,6 +59,7 @@ function App() {
                 <li><Link to="/roleplay" onClick={() => setMenuOpen(false)}>롤플레잉</Link></li>
                 <li><Link to="/scripts" onClick={() => setMenuOpen(false)}>영업 스크립트</Link></li>
                 <li><Link to="/quiz" onClick={() => setMenuOpen(false)}>제품 퀴즈</Link></li>
+                <li><Link to="/history" onClick={() => setMenuOpen(false)}>대화 기록</Link></li>
                 <li><Link to="/community" onClick={() => setMenuOpen(false)}>커뮤니티</Link></li>
               </ul>
             </div>
@@ -70,6 +72,7 @@ function App() {
               <Route path="/roleplay" element={<RolePlay />} />
               <Route path="/scripts" element={<ScriptLibrary />} />
               <Route path="/quiz" element={<ProductQuiz />} />
+              <Route path="/history" element={<ConversationHistory />} />
               <Route path="/community" element={<Community />} />
               <Route path="/admin" element={<Admin />} />
             </Routes>

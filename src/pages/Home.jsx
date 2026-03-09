@@ -36,6 +36,14 @@ function Home() {
       badge: 'NEW'
     },
     {
+      icon: '📚',
+      title: '대화 기록 & AI 피드백',
+      description: '저장된 대화 복습 및 AI 분석',
+      link: '/history',
+      gradient: 'linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%)',
+      badge: 'NEW'
+    },
+    {
       icon: '👥',
       title: '커뮤니티',
       description: '영업 노하우와 경험 공유하기',

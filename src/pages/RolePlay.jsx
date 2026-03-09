@@ -2,6 +2,8 @@ import React, { useState, useRef, useEffect } from 'react'
 import { GeminiEngine, getAPIKeys, addAPIKey, removeAPIKey, resetFailedKeys } from '../data/geminiEngine'
 import { ResponseEngine } from '../data/responseEngine'
 import { SalesCoach } from '../data/salesCoach'
+import { db } from '../firebase/config'
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore'
 import './RolePlay.css'
 
 function RolePlay() {
@@ -28,6 +30,10 @@ function RolePlay() {
   const [currentFeedback, setCurrentFeedback] = useState(null)
   const [showReport, setShowReport] = useState(false)
   const [finalReport, setFinalReport] = useState(null)
+  const [isRecording, setIsRecording] = useState(false)
+  const [mediaRecorder, setMediaRecorder] = useState(null)
+  const [audioChunks, setAudioChunks] = useState([])
+  const [recordedAudioUrl, setRecordedAudioUrl] = useState(null)
   
   const handsFreeRef = useRef(handsFreeMode)
   const userInputRef = useRef('')
@@ -400,9 +406,79 @@ function RolePlay() {
     setCurrentFeedback(null)
     setShowReport(false)
     setFinalReport(null)
+    setIsRecording(false)
+    setRecordedAudioUrl(null)
+    setAudioChunks([])
     if (isListening && recognition) {
       recognition.stop()
       setIsListening(false)
+    }
+    if (mediaRecorder && mediaRecorder.state === 'recording') {
+      mediaRecorder.stop()
+    }
+  }
+
+  const startRecording = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+      const recorder = new MediaRecorder(stream)
+      const chunks = []
+
+      recorder.ondataavailable = (e) => {
+        if (e.data.size > 0) {
+          chunks.push(e.data)
+        }
+      }
+
+      recorder.onstop = () => {
+        const blob = new Blob(chunks, { type: 'audio/webm' })
+        const url = URL.createObjectURL(blob)
+        setRecordedAudioUrl(url)
+        setAudioChunks(chunks)
+        stream.getTracks().forEach(track => track.stop())
+      }
+
+      recorder.start()
+      setMediaRecorder(recorder)
+      setIsRecording(true)
+      alert('🎙️ 녹음이 시작되었습니다')
+    } catch (error) {
+      console.error('녹음 시작 실패:', error)
+      alert('❌ 녹음 시작 실패: 마이크 권한을 확인해주세요')
+    }
+  }
+
+  const stopRecording = () => {
+    if (mediaRecorder && mediaRecorder.state === 'recording') {
+      mediaRecorder.stop()
+      setIsRecording(false)
+      alert('✅ 녹음이 종료되었습니다')
+    }
+  }
+
+  const saveConversation = async () => {
+    if (conversation.length === 0) {
+      alert('저장할 대화가 없습니다!')
+      return
+    }
+
+    try {
+      const conversationData = {
+        scenarioTitle: selectedScenario.title,
+        scenarioIcon: selectedScenario.icon,
+        messages: conversation.map(msg => ({
+          speaker: msg.speaker,
+          text: msg.text
+        })),
+        timestamp: serverTimestamp(),
+        audioUrl: recordedAudioUrl || null
+      }
+
+      await addDoc(collection(db, 'conversations'), conversationData)
+      alert('✅ 대화가 저장되었습니다!')
+    } catch (error) {
+      console.error('대화 저장 실패:', error)
+      alert('❌ 저장 실패: ' + error.message)
     }
   }
 
@@ -848,6 +924,19 @@ function RolePlay() {
                 className="feedback-btn"
               >
                 📊 {showFeedback ? '피드백 숨기기' : '피드백 보기'}
+              </button>
+              <button 
+                onClick={isRecording ? stopRecording : startRecording}
+                className={`record-btn ${isRecording ? 'recording' : ''}`}
+              >
+                {isRecording ? '⏹️ 녹음 중지' : '🎙️ 녹음 시작'}
+              </button>
+              <button 
+                onClick={saveConversation}
+                className="save-btn"
+                disabled={conversation.length === 0}
+              >
+                💾 대화 저장
               </button>
               <button onClick={endConversation} className="end-btn">
                 ✅ 대화 종료
