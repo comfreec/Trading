@@ -432,10 +432,21 @@ function CustomerSimulator() {
     
     setResponseEngine(engine)
     
+    // 다양한 첫 인사 프롬프트
+    const greetingPrompts = [
+      '영업사원이 방문했습니다. 첫 인사를 하세요. 고객으로서 자연스럽게 반응하세요.',
+      '영업사원이 찾아왔습니다. 문을 열고 첫 반응을 보이세요.',
+      '코웨이 영업사원이 방문했습니다. 어떻게 맞이하시겠어요?',
+      '초인종이 울리고 영업사원이 왔습니다. 첫 마디를 하세요.',
+      '영업사원이 인사를 건넵니다. 고객으로서 응답하세요.'
+    ]
+    
+    const randomPrompt = greetingPrompts[Math.floor(Math.random() * greetingPrompts.length)]
+    
     // 첫 인사 생성
     if (useGemini && apiKeys.length > 0) {
       // Gemini는 비동기이므로 별도 처리
-      engine.generateResponse('영업사원이 방문했습니다. 첫 인사를 하세요. 고객으로서 자연스럽게 반응하세요.').then(greeting => {
+      engine.generateResponse(randomPrompt).then(greeting => {
         setConversation([{ speaker: 'customer', text: greeting }])
         
         // 대화창으로 자동 스크롤
@@ -455,6 +466,7 @@ function CustomerSimulator() {
         }, 500)
       })
     } else {
+      // 기본 엔진은 greeting 배열에서 랜덤 선택
       const greeting = engine.generateResponse('안녕하세요')
       setConversation([{ speaker: 'customer', text: greeting }])
       
