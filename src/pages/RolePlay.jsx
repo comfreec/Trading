@@ -169,10 +169,13 @@ function RolePlay() {
       const voices = window.speechSynthesis.getVoices()
       const koreanVoices = voices.filter(voice => voice.lang.startsWith('ko'))
       setAvailableVoices(koreanVoices)
-      const femaleVoice = koreanVoices.find(v => 
-        v.name.includes('Female') || v.name.includes('여성') || v.name.includes('Yuna') || v.name.includes('Heami')
-      )
-      setSelectedVoice(femaleVoice || koreanVoices[0] || null)
+      
+      // 랜덤하게 한국어 음성 선택
+      if (koreanVoices.length > 0) {
+        const randomVoice = koreanVoices[Math.floor(Math.random() * koreanVoices.length)]
+        setSelectedVoice(randomVoice)
+        console.log(`🎤 선택된 음성: ${randomVoice.name} (총 ${koreanVoices.length}개 한국어 음성 사용 가능)`)
+      }
     }
 
     loadVoices()
@@ -188,9 +191,20 @@ function RolePlay() {
     }
 
     window.speechSynthesis.cancel()
+    
+    // 매번 랜덤하게 음성 선택
+    const voices = window.speechSynthesis.getVoices()
+    const koreanVoices = voices.filter(voice => voice.lang.startsWith('ko'))
+    const randomVoice = koreanVoices.length > 0 
+      ? koreanVoices[Math.floor(Math.random() * koreanVoices.length)]
+      : selectedVoice
+    
     const utterance = new SpeechSynthesisUtterance(text)
     
-    if (selectedVoice) utterance.voice = selectedVoice
+    if (randomVoice) {
+      utterance.voice = randomVoice
+      console.log(`🎤 사용 중인 음성: ${randomVoice.name}`)
+    }
     utterance.lang = 'ko-KR'
     utterance.rate = 1.3 // 속도 빠르게
     utterance.pitch = 1.0

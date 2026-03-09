@@ -4,6 +4,8 @@ import { GeminiEngine, getAPIKeys, addAPIKey, removeAPIKey, resetFailedKeys } fr
 import { SalesCoach } from '../data/salesCoach'
 import { MissionTracker } from '../data/missionSystem'
 import { LevelSystem } from '../data/levelSystem'
+import { db } from '../firebase/config'
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore'
 import './CustomerSimulator.css'
 
 function CustomerSimulator() {
@@ -42,6 +44,10 @@ function CustomerSimulator() {
   const [isWaitingForSpeech, setIsWaitingForSpeech] = useState(false)
   const [micPermission, setMicPermission] = useState('prompt') // 'granted', 'denied', 'prompt'
   const [statusMessage, setStatusMessage] = useState(null) // UI 메시지 표시용
+  const [isRecording, setIsRecording] = useState(false)
+  const [mediaRecorder, setMediaRecorder] = useState(null)
+  const [audioChunks, setAudioChunks] = useState([])
+  const [recordedAudioUrl, setRecordedAudioUrl] = useState(null)
   
   // Ref로 최신 상태 유지
   const handsFreeRef = useRef(handsFreeMode)
@@ -211,14 +217,12 @@ function CustomerSimulator() {
       console.log('사용 가능한 한국어 음성:', koreanVoices)
       setAvailableVoices(koreanVoices)
       
-      // 기본 음성 선택 (여성 음성 우선)
-      const femaleVoice = koreanVoices.find(v => 
-        v.name.includes('Female') || 
-        v.name.includes('여성') || 
-        v.name.includes('Yuna') ||
-        v.name.includes('Heami')
-      )
-      setSelectedVoice(femaleVoice || koreanVoices[0] || null)
+      // 랜덤하게 한국어 음성 선택
+      if (koreanVoices.length > 0) {
+        const randomVoice = koreanVoices[Math.floor(Math.random() * koreanVoices.length)]
+        setSelectedVoice(randomVoice)
+        console.log(`🎤 선택된 음성: ${randomVoice.name} (총 ${koreanVoices.length}개 한국어 음성 사용 가능)`)
+      }
     }
 
     loadVoices()
@@ -239,11 +243,19 @@ function CustomerSimulator() {
     // 이전 음성 중지
     window.speechSynthesis.cancel()
 
+    // 매번 랜덤하게 음성 선택
+    const voices = window.speechSynthesis.getVoices()
+    const koreanVoices = voices.filter(voice => voice.lang.startsWith('ko'))
+    const randomVoice = koreanVoices.length > 0 
+      ? koreanVoices[Math.floor(Math.random() * koreanVoices.length)]
+      : selectedVoice
+
     const utterance = new SpeechSynthesisUtterance(text)
     
     // 음성 설정
-    if (selectedVoice) {
-      utterance.voice = selectedVoice
+    if (randomVoice) {
+      utterance.voice = randomVoice
+      console.log(`🎤 사용 중인 음성: ${randomVoice.name}`)
     }
     utterance.lang = 'ko-KR'
     utterance.rate = 1.3 // 속도 (0.1 ~ 10) - 빠르게
@@ -653,9 +665,79 @@ function CustomerSimulator() {
     setActiveMissions([])
     setCompletedMissionsInSession([])
     setExpGained(0)
+    setIsRecording(false)
+    setRecordedAudioUrl(null)
+    setAudioChunks([])
     if (isListening && recognition) {
       recognition.stop()
       setIsListening(false)
+    }
+    if (mediaRecorder && mediaRecorder.state === 'recording') {
+      mediaRecorder.stop()
+    }
+  }
+
+  const startRecording = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+      const recorder = new MediaRecorder(stream)
+      const chunks = []
+
+      recorder.ondataavailable = (e) => {
+        if (e.data.size > 0) {
+          chunks.push(e.data)
+        }
+      }
+
+      recorder.onstop = () => {
+        const blob = new Blob(chunks, { type: 'audio/webm' })
+        const url = URL.createObjectURL(blob)
+        setRecordedAudioUrl(url)
+        setAudioChunks(chunks)
+        stream.getTracks().forEach(track => track.stop())
+      }
+
+      recorder.start()
+      setMediaRecorder(recorder)
+      setIsRecording(true)
+      alert('🎙️ 녹음이 시작되었습니다')
+    } catch (error) {
+      console.error('녹음 시작 실패:', error)
+      alert('❌ 녹음 시작 실패: 마이크 권한을 확인해주세요')
+    }
+  }
+
+  const stopRecording = () => {
+    if (mediaRecorder && mediaRecorder.state === 'recording') {
+      mediaRecorder.stop()
+      setIsRecording(false)
+      alert('✅ 녹음이 종료되었습니다')
+    }
+  }
+
+  const saveConversation = async () => {
+    if (conversation.length === 0) {
+      alert('저장할 대화가 없습니다!')
+      return
+    }
+
+    try {
+      const conversationData = {
+        scenarioTitle: `${selectedCustomer.name} - ${selectedCustomer.type}`,
+        scenarioIcon: selectedCustomer.icon,
+        messages: conversation.map(msg => ({
+          speaker: msg.speaker,
+          text: msg.text
+        })),
+        timestamp: serverTimestamp(),
+        audioUrl: recordedAudioUrl || null
+      }
+
+      await addDoc(collection(db, 'conversations'), conversationData)
+      alert('✅ 대화가 저장되었습니다!')
+    } catch (error) {
+      console.error('대화 저장 실패:', error)
+      alert('❌ 저장 실패: ' + error.message)
     }
   }
 
@@ -1096,6 +1178,19 @@ function CustomerSimulator() {
                   ⏹️ 음성 중지
                 </button>
               )}
+              <button 
+                onClick={isRecording ? stopRecording : startRecording}
+                className={`record-btn ${isRecording ? 'recording' : ''}`}
+              >
+                {isRecording ? '⏹️ 녹음 중지' : '🎙️ 녹음 시작'}
+              </button>
+              <button 
+                onClick={saveConversation}
+                className="save-btn"
+                disabled={conversation.length === 0}
+              >
+                💾 대화 저장
+              </button>
               <button onClick={() => setShowTips(!showTips)} className="tips-btn">
                 💡 {showTips ? '팁 숨기기' : '팁 보기'}
               </button>
