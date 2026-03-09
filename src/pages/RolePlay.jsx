@@ -206,7 +206,7 @@ function RolePlay() {
       console.log(`🎤 사용 중인 음성: ${randomVoice.name}`)
     }
     utterance.lang = 'ko-KR'
-    utterance.rate = 1.3 // 속도 빠르게
+    utterance.rate = 1.4 // 속도 빠르게
     utterance.pitch = 1.0
     utterance.volume = 1.0
 
