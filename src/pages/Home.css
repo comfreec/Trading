@@ -7,11 +7,11 @@
 /* Hero Section - 현대적 디자인 */
 .hero {
   text-align: center;
-  padding: 80px 40px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  border-radius: 30px;
-  margin-bottom: 60px;
-  box-shadow: 0 20px 60px rgba(102, 126, 234, 0.3);
+  padding: 5rem 2.5rem;
+  background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+  border-radius: var(--radius-xl);
+  margin-bottom: 4rem;
+  box-shadow: var(--shadow-xl);
   position: relative;
   overflow: hidden;
   color: white;
@@ -35,22 +35,22 @@
 
 .hero-badge {
   display: inline-block;
-  padding: 8px 20px;
+  padding: var(--spacing-sm) var(--spacing-lg);
   background: rgba(255, 255, 255, 0.2);
   backdrop-filter: blur(10px);
-  border-radius: 50px;
-  font-size: 14px;
+  border-radius: var(--radius-full);
+  font-size: 0.875rem;
   font-weight: 600;
-  margin-bottom: 20px;
+  margin-bottom: var(--spacing-lg);
   border: 1px solid rgba(255, 255, 255, 0.3);
   position: relative;
   z-index: 1;
 }
 
 .hero h1 {
-  font-size: 64px;
+  font-size: 4rem;
   font-weight: 800;
-  margin-bottom: 20px;
+  margin-bottom: var(--spacing-lg);
   position: relative;
   z-index: 1;
   text-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
@@ -58,9 +58,9 @@
 }
 
 .hero-subtitle {
-  font-size: 22px;
+  font-size: 1.375rem;
   opacity: 0.95;
-  margin-bottom: 30px;
+  margin-bottom: var(--spacing-xl);
   position: relative;
   z-index: 1;
   font-weight: 400;
@@ -68,7 +68,7 @@
 
 .hero-features {
   display: flex;
-  gap: 15px;
+  gap: var(--spacing-md);
   justify-content: center;
   flex-wrap: wrap;
   position: relative;
@@ -76,26 +76,26 @@
 }
 
 .hero-tag {
-  padding: 10px 20px;
+  padding: var(--spacing-sm) var(--spacing-lg);
   background: rgba(255, 255, 255, 0.15);
   backdrop-filter: blur(10px);
-  border-radius: 25px;
-  font-size: 14px;
+  border-radius: var(--radius-full);
+  font-size: 0.875rem;
   font-weight: 500;
   border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 /* Features Section */
 .features-section {
-  margin-bottom: 80px;
+  margin-bottom: 5rem;
 }
 
 .section-title {
   text-align: center;
-  font-size: 42px;
+  font-size: 2.625rem;
   font-weight: 700;
-  color: #333;
-  margin-bottom: 50px;
+  color: var(--gray-900);
+  margin-bottom: 3rem;
   position: relative;
 }
 
@@ -104,27 +104,27 @@
   display: block;
   width: 80px;
   height: 4px;
-  background: linear-gradient(90deg, #667eea, #764ba2);
-  margin: 20px auto 0;
-  border-radius: 2px;
+  background: linear-gradient(90deg, var(--primary), var(--secondary));
+  margin: var(--spacing-lg) auto 0;
+  border-radius: var(--radius-sm);
 }
 
 .features-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-  gap: 30px;
+  gap: var(--spacing-xl);
 }
 
 .feature-card {
   background: white;
-  border-radius: 24px;
+  border-radius: var(--radius-lg);
   text-decoration: none;
-  color: #333;
+  color: var(--gray-900);
   transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+  box-shadow: var(--shadow-md);
   position: relative;
   overflow: hidden;
-  border: 1px solid rgba(0, 0, 0, 0.05);
+  border: 1px solid var(--gray-200);
 }
 
 .card-gradient {
@@ -144,32 +144,32 @@
 
 .feature-badge {
   position: absolute;
-  top: 20px;
-  right: 20px;
-  padding: 6px 14px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  top: var(--spacing-lg);
+  right: var(--spacing-lg);
+  padding: var(--spacing-xs) var(--spacing-md);
+  background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
   color: white;
-  border-radius: 20px;
-  font-size: 12px;
+  border-radius: var(--radius-full);
+  font-size: 0.75rem;
   font-weight: 600;
   z-index: 2;
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+  box-shadow: var(--shadow-md);
 }
 
 .feature-content {
-  padding: 40px 30px;
+  padding: 2.5rem 1.875rem;
   position: relative;
   z-index: 1;
 }
 
 .feature-card:hover {
   transform: translateY(-12px) scale(1.02);
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+  box-shadow: var(--shadow-xl);
 }
 
 .feature-icon {
-  font-size: 72px;
-  margin-bottom: 24px;
+  font-size: 4.5rem;
+  margin-bottom: var(--spacing-lg);
   display: block;
   transition: transform 0.4s ease;
 }
@@ -179,22 +179,22 @@
 }
 
 .feature-card h3 {
-  font-size: 24px;
+  font-size: 1.5rem;
   font-weight: 700;
-  margin-bottom: 12px;
-  color: #333;
+  margin-bottom: var(--spacing-md);
+  color: var(--gray-900);
 }
 
 .feature-card p {
-  color: #666;
+  color: var(--gray-600);
   line-height: 1.7;
-  font-size: 15px;
-  margin-bottom: 20px;
+  font-size: 0.9375rem;
+  margin-bottom: var(--spacing-lg);
 }
 
 .card-arrow {
-  font-size: 24px;
-  color: #667eea;
+  font-size: 1.5rem;
+  color: var(--primary);
   font-weight: bold;
   opacity: 0;
   transform: translateX(-10px);
@@ -210,18 +210,18 @@
 .stats-section {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 30px;
-  margin-bottom: 80px;
+  gap: var(--spacing-xl);
+  margin-bottom: 5rem;
 }
 
 .stat-card {
   background: white;
-  padding: 50px 30px;
-  border-radius: 24px;
+  padding: 3rem 1.875rem;
+  border-radius: var(--radius-lg);
   text-align: center;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+  box-shadow: var(--shadow-md);
   transition: all 0.3s ease;
-  border: 1px solid rgba(0, 0, 0, 0.05);
+  border: 1px solid var(--gray-200);
   position: relative;
   overflow: hidden;
 }
@@ -233,82 +233,82 @@
   left: 0;
   right: 0;
   height: 4px;
-  background: linear-gradient(90deg, #667eea, #764ba2);
+  background: linear-gradient(90deg, var(--primary), var(--secondary));
 }
 
 .stat-card:hover {
   transform: translateY(-8px);
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.12);
+  box-shadow: var(--shadow-xl);
 }
 
 .stat-icon {
-  font-size: 48px;
-  margin-bottom: 20px;
+  font-size: 3rem;
+  margin-bottom: var(--spacing-lg);
 }
 
 .stat-card h2 {
-  font-size: 56px;
+  font-size: 3.5rem;
   font-weight: 800;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  margin-bottom: 12px;
+  margin-bottom: var(--spacing-md);
   letter-spacing: -2px;
 }
 
 .stat-card p {
-  color: #666;
-  font-size: 16px;
+  color: var(--gray-600);
+  font-size: 1rem;
   font-weight: 500;
 }
 
 /* CTA Section */
 .cta-section {
   text-align: center;
-  padding: 80px 40px;
-  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-  border-radius: 30px;
-  margin-bottom: 60px;
+  padding: 5rem 2.5rem;
+  background: linear-gradient(135deg, var(--accent) 0%, #f5576c 100%);
+  border-radius: var(--radius-xl);
+  margin-bottom: 4rem;
   color: white;
-  box-shadow: 0 20px 60px rgba(240, 147, 251, 0.3);
+  box-shadow: var(--shadow-xl);
 }
 
 .cta-section h2 {
-  font-size: 48px;
+  font-size: 3rem;
   font-weight: 800;
-  margin-bottom: 16px;
+  margin-bottom: var(--spacing-md);
   text-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
 }
 
 .cta-section p {
-  font-size: 20px;
+  font-size: 1.25rem;
   opacity: 0.95;
-  margin-bottom: 40px;
+  margin-bottom: 2.5rem;
 }
 
 .cta-button {
   display: inline-flex;
   align-items: center;
-  gap: 12px;
-  padding: 18px 40px;
+  gap: var(--spacing-md);
+  padding: 1.125rem 2.5rem;
   background: white;
   color: #f5576c;
   text-decoration: none;
-  border-radius: 50px;
-  font-size: 18px;
+  border-radius: var(--radius-full);
+  font-size: 1.125rem;
   font-weight: 700;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  box-shadow: var(--shadow-lg);
   transition: all 0.3s ease;
 }
 
 .cta-button:hover {
   transform: translateY(-4px) scale(1.05);
-  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
+  box-shadow: var(--shadow-xl);
 }
 
 .cta-arrow {
-  font-size: 24px;
+  font-size: 1.5rem;
   transition: transform 0.3s ease;
 }
 
@@ -319,20 +319,20 @@
 /* 반응형 */
 @media (max-width: 768px) {
   .hero {
-    padding: 60px 30px;
-    border-radius: 20px;
+    padding: 3.75rem 1.875rem;
+    border-radius: var(--radius-lg);
   }
   
   .hero h1 {
-    font-size: 42px;
+    font-size: 2.625rem;
   }
   
   .hero-subtitle {
-    font-size: 18px;
+    font-size: 1.125rem;
   }
   
   .section-title {
-    font-size: 32px;
+    font-size: 2rem;
   }
   
   .features-grid {
@@ -340,14 +340,14 @@
   }
   
   .stat-card h2 {
-    font-size: 48px;
+    font-size: 3rem;
   }
   
   .cta-section {
-    padding: 60px 30px;
+    padding: 3.75rem 1.875rem;
   }
   
   .cta-section h2 {
-    font-size: 36px;
+    font-size: 2.25rem;
   }
 }

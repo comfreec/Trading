@@ -4,6 +4,7 @@ import { qualityFocusedResponses } from './qualityFocusedResponses'
 import { comparisonResponses } from './comparisonResponses'
 import { quickDecisionResponses } from './quickDecisionResponses'
 import { healthFocusedResponses } from './healthFocusedResponses'
+import { careToRentalResponses } from './careToRentalResponses'
 
 export class ResponseEngine {
   constructor(customerType) {
@@ -23,7 +24,8 @@ export class ResponseEngine {
       2: qualityFocusedResponses,
       3: comparisonResponses,
       4: quickDecisionResponses,
-      5: healthFocusedResponses
+      5: healthFocusedResponses,
+      6: careToRentalResponses // 케어 후 렌탈 영업
     }[customerType]
   }
 

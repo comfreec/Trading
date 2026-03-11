@@ -49,6 +49,8 @@ function CustomerSimulator() {
   const [audioChunks, setAudioChunks] = useState([])
   const [recordedAudioUrl, setRecordedAudioUrl] = useState(null)
   
+  const [showMissions, setShowMissions] = useState(false) // 미션 표시 상태
+  
   // Ref로 최신 상태 유지
   const handsFreeRef = useRef(handsFreeMode)
   const userInputRef = useRef('')
@@ -109,48 +111,31 @@ function CustomerSimulator() {
     try {
       const recognitionInstance = new SpeechRecognition()
       
-      recognitionInstance.continuous = true // 계속 듣기 모드
+      recognitionInstance.continuous = false // 단일 발화 모드
       recognitionInstance.interimResults = true
       recognitionInstance.lang = 'ko-KR'
       recognitionInstance.maxAlternatives = 1
       
-      let finalTranscript = ''
-      let silenceTimer = null
-      
       recognitionInstance.onstart = () => {
         console.log('🎤 음성 인식 시작됨')
         setIsListening(true)
-        finalTranscript = ''
       }
       
       recognitionInstance.onresult = (event) => {
         console.log('📝 음성 인식 결과:', event)
         
-        let interimTranscript = ''
-        
+        let transcript = ''
         for (let i = event.resultIndex; i < event.results.length; i++) {
-          const transcript = event.results[i][0].transcript
-          if (event.results[i].isFinal) {
-            finalTranscript += transcript
-          } else {
-            interimTranscript += transcript
-          }
+          transcript += event.results[i][0].transcript
         }
         
-        const fullTranscript = finalTranscript + interimTranscript
-        console.log('인식된 텍스트:', fullTranscript)
-        setUserInput(fullTranscript)
-        userInputRef.current = fullTranscript
+        console.log('인식된 텍스트:', transcript)
+        setUserInput(transcript)
+        userInputRef.current = transcript
         
-        // 침묵 타이머 리셋 - 말이 끝나고 2초 후 자동 전송
-        if (silenceTimer) clearTimeout(silenceTimer)
-        
-        silenceTimer = setTimeout(() => {
-          if (finalTranscript.trim()) {
-            console.log('✅ 침묵 감지 - 말이 끝난 것으로 판단')
-            recognitionInstance.stop()
-          }
-        }, 2000) // 2초 침묵 후 종료
+        if (event.results[event.results.length - 1].isFinal) {
+          console.log('✅ 최종 결과 확정')
+        }
       }
       
       recognitionInstance.onerror = (event) => {
@@ -309,36 +294,65 @@ function CustomerSimulator() {
 
   // 핸즈프리 모드: 음성 인식 자동 시작
   const startAutoListening = () => {
-    if (!recognition || !handsFreeMode) return
+    if (!recognition) {
+      console.log('❌ recognition 없음')
+      return
+    }
+    
+    if (!handsFreeRef.current) {
+      console.log('❌ 핸즈프리 모드 꺼짐')
+      return
+    }
+    
+    console.log('🎤 startAutoListening 호출됨', { isListening, isSpeaking, handsFreeMode: handsFreeRef.current })
     
     setIsWaitingForSpeech(true)
     
     setTimeout(() => {
-      if (!isListening && handsFreeMode && !isSpeaking) {
-        try {
-          recognition.start()
-          console.log('🎤 핸즈프리: 자동 음성 인식 시작')
-          setIsWaitingForSpeech(false) // 시작되면 대기 상태 해제
-        } catch (error) {
-          console.error('자동 음성 인식 시작 실패:', error)
-          setIsWaitingForSpeech(false)
-          
-          // 모바일에서는 사용자 제스처 필요
-          if (error.message && error.message.includes('already started')) {
-            console.log('이미 실행 중')
-          } else {
-            // 실패하면 1초 후 재시도
-            setTimeout(() => {
-              if (handsFreeRef.current && !isListening && !isSpeaking) {
-                startAutoListening()
-              }
-            }, 1000)
-          }
-        }
-      } else {
+      // 최신 상태 다시 확인
+      if (!handsFreeRef.current) {
+        console.log('❌ 핸즈프리 모드 꺼짐 (재확인)')
         setIsWaitingForSpeech(false)
+        return
       }
-    }, 800)
+      
+      if (isListening) {
+        console.log('⚠️ 이미 음성 인식 중')
+        setIsWaitingForSpeech(false)
+        return
+      }
+      
+      if (isSpeaking) {
+        console.log('⚠️ 아직 음성 출력 중 - 1초 후 재시도')
+        setTimeout(() => {
+          if (handsFreeRef.current && !isListening && !isSpeaking) {
+            startAutoListening()
+          }
+        }, 1000)
+        return
+      }
+      
+      try {
+        recognition.start()
+        console.log('✅ 핸즈프리: 자동 음성 인식 시작!')
+        setIsWaitingForSpeech(false)
+      } catch (error) {
+        console.error('❌ 자동 음성 인식 시작 실패:', error)
+        setIsWaitingForSpeech(false)
+        
+        if (error.message && error.message.includes('already started')) {
+          console.log('⚠️ 이미 실행 중 (에러)')
+        } else {
+          // 실패하면 1.5초 후 재시도
+          console.log('🔄 1.5초 후 재시도')
+          setTimeout(() => {
+            if (handsFreeRef.current && !isListening && !isSpeaking) {
+              startAutoListening()
+            }
+          }, 1500)
+        }
+      }
+    }, 1000) // 딜레이를 1초로 증가
   }
 
   // 핸즈프리 모드 토글
@@ -399,43 +413,57 @@ function CustomerSimulator() {
   const customerTypes = [
     {
       id: 1,
-      name: '가격 민감형 고객',
+      name: '가격 민감형',
       icon: '💰',
-      description: '가격과 할인에 민감하고 비용 대비 효과를 중시',
+      description: '비용 대비 효과를 중시하며 할인과 프로모션에 관심',
       personality: '가격이 제일 중요해요. 다른 곳보다 저렴한가요?',
-      tips: ['가격보다 장기적 가치 강조', '렌탈의 경제성 설명', '프로모션 정보 제공']
+      tips: ['장기적 가치와 경제성 강조', '렌탈의 실질적 이점 설명', '프로모션 정보 적극 활용'],
+      mode: 'customer-first'
     },
     {
       id: 2,
-      name: '품질 중시형 고객',
+      name: '품질 중시형',
       icon: '⭐',
-      description: '제품의 품질과 브랜드 신뢰도를 최우선으로 고려',
+      description: '제품 품질과 브랜드 신뢰도를 최우선으로 고려',
       personality: '품질이 정말 좋은가요? 오래 사용할 수 있나요?',
-      tips: ['코웨이 브랜드 신뢰도 강조', '기술력과 품질 인증 설명', 'A/S 시스템 안내']
+      tips: ['코웨이 브랜드 가치 강조', '기술력과 품질 인증 제시', 'A/S 시스템의 우수성 설명'],
+      mode: 'customer-first'
     },
     {
       id: 3,
-      name: '비교 검토형 고객',
+      name: '비교 검토형',
       icon: '🔍',
-      description: '여러 제품을 꼼꼼히 비교하고 신중하게 결정',
+      description: '여러 제품을 꼼꼼히 비교하며 신중하게 결정',
       personality: '다른 제품들과 비교해보고 싶어요. 차이점이 뭔가요?',
-      tips: ['경쟁사 대비 차별점 명확히', '객관적 데이터 제시', '체험 기회 제공']
+      tips: ['경쟁사 대비 차별점 명확히 제시', '객관적 데이터와 수치 활용', '체험 기회 적극 제안'],
+      mode: 'customer-first'
     },
     {
       id: 4,
-      name: '빠른 결정형 고객',
+      name: '빠른 결정형',
       icon: '⚡',
-      description: '빠르게 결정하고 즉시 실행을 원함',
+      description: '신속한 의사결정을 선호하며 즉시 실행을 원함',
       personality: '좋으면 바로 할게요. 언제 설치 가능한가요?',
-      tips: ['핵심 혜택만 간결하게', '즉시 진행 가능 강조', '빠른 프로세스 안내']
+      tips: ['핵심 혜택만 간결하게 전달', '즉시 진행 가능함을 강조', '빠른 프로세스 안내'],
+      mode: 'customer-first'
     },
     {
       id: 5,
-      name: '건강 관심형 고객',
+      name: '건강 관심형',
       icon: '🏥',
-      description: '건강과 위생에 관심이 많고 케어 서비스 중시',
+      description: '건강과 위생을 중시하며 케어 서비스에 높은 관심',
       personality: '매트리스 청소가 건강에 얼마나 중요한가요?',
-      tips: ['건강 효과 구체적 설명', '진드기/알레르기 예방 강조', '정기 케어의 중요성']
+      tips: ['건강 효과를 구체적으로 설명', '진드기/알레르기 예방 강조', '정기 케어의 필요성 제시'],
+      mode: 'customer-first'
+    },
+    {
+      id: 6,
+      name: '케어 후 렌탈 영업',
+      icon: '🧹',
+      description: '케어 서비스 완료 후 자연스러운 렌탈 제안 (실전 모드)',
+      personality: '케어 감사합니다. 깨끗해졌네요!',
+      tips: ['케어 결과를 먼저 시각화', '진드기/먼지 사진으로 문제 인식', '자연스러운 제품 연결'],
+      mode: 'agent-first'
     }
   ]
 
@@ -449,7 +477,48 @@ function CustomerSimulator() {
     
     setResponseEngine(engine)
     
-    // 다양한 첫 인사 프롬프트
+    // 케어 후 렌탈 영업 모드 (영업사원이 먼저 말함)
+    if (customer.mode === 'agent-first') {
+      setConversation([])
+      
+      // 대화창으로 자동 스크롤
+      setTimeout(() => {
+        const conversationArea = document.querySelector('.conversation-area')
+        if (conversationArea) {
+          conversationArea.scrollIntoView({ behavior: 'smooth', block: 'start' })
+        }
+      }, 100)
+      
+      setConversationState({
+        stage: 'initial',
+        mentionedTopics: [],
+        responseCount: 0
+      })
+      setEvaluations([])
+      setShowTips(false)
+      setShowReport(false)
+      setCurrentFeedback(null)
+      setCompletedMissionsInSession([])
+      setExpGained(0)
+      
+      // 활성 미션 로드
+      const missions = missionTracker.getAvailableMissions()
+      setActiveMissions(missions.slice(0, 3))
+      
+      // Gemini 엔진 초기화 (시스템 프롬프트 추가)
+      if (useGemini && apiKeys.length > 0) {
+        // 빈 프롬프트로 시스템 초기화만 수행
+        engine.generateResponse('').then(() => {
+          console.log('✅ 케어 후 렌탈 모드 초기화 완료')
+        }).catch(err => {
+          console.error('초기화 오류:', err)
+        })
+      }
+      
+      return
+    }
+    
+    // 기존 모드 (고객이 먼저 말함)
     const greetingPrompts = [
       '영업사원이 방문했습니다. 첫 인사를 하세요. 고객으로서 자연스럽게 반응하세요.',
       '영업사원이 찾아왔습니다. 문을 열고 첫 반응을 보이세요.',
@@ -750,9 +819,14 @@ function CustomerSimulator() {
       return
     }
 
+    if (!selectedCustomer) {
+      alert('❌ 저장 실패: 고객 정보가 없습니다.')
+      return
+    }
+
     try {
       const conversationData = {
-        scenarioTitle: `${selectedCustomer.name} - ${selectedCustomer.type}`,
+        scenarioTitle: `${selectedCustomer.name}`,
         scenarioIcon: selectedCustomer.icon,
         messages: conversation.map(msg => ({
           speaker: msg.speaker,
@@ -762,11 +836,21 @@ function CustomerSimulator() {
         audioUrl: recordedAudioUrl || null
       }
 
+      console.log('대화 저장 시도:', conversationData)
       await addDoc(collection(db, 'conversations'), conversationData)
       alert('✅ 대화가 저장되었습니다!')
     } catch (error) {
       console.error('대화 저장 실패:', error)
-      alert('❌ 저장 실패: ' + error.message)
+      console.error('에러 코드:', error.code)
+      console.error('에러 메시지:', error.message)
+      
+      if (error.code === 'permission-denied') {
+        alert('❌ 저장 실패: Firebase 권한이 없습니다. Firestore 규칙을 확인해주세요.')
+      } else if (error.code === 'unavailable') {
+        alert('❌ 저장 실패: 네트워크 연결을 확인해주세요.')
+      } else {
+        alert('❌ 저장 실패: ' + error.message)
+      }
     }
   }
 
@@ -899,8 +983,8 @@ function CustomerSimulator() {
   return (
     <div className="simulator">
       <div className="simulator-header">
-        <h1>🎭 고객 시나리오 시뮬레이터</h1>
-        <p>실전 영업 트레이닝 - 700+ 대화 패턴 | AI 코치 피드백</p>
+        <h1>🎭 고객 시뮬레이터</h1>
+        <p>실전 중심의 체계적인 영업 대화 트레이닝</p>
         <div className="user-progress">
           <div className="level-badge">
             <span className="level-icon">{levelSystem.getCurrentLevel().icon}</span>
@@ -923,102 +1007,121 @@ function CustomerSimulator() {
 
       {!selectedCustomer ? (
         <div className="customer-selection">
-          <h2>고객 유형을 선택하세요</h2>
+          <div className="selection-header">
+            <h2>고객 유형을 선택하세요</h2>
+            <button 
+              onClick={() => setShowAPIKeyManager(!showAPIKeyManager)}
+              className="settings-btn"
+              title="Gemini AI 설정"
+            >
+              ⚙️ 설정
+            </button>
+          </div>
           
-          {/* Gemini AI 설정 패널 */}
-          <div className="gemini-settings-panel">
-            <div className="gemini-header">
-              <div className="gemini-title">
-                <span className="gemini-icon">🤖</span>
-                <h3>Gemini AI 대화 엔진</h3>
-                <button 
-                  onClick={() => setUseGemini(!useGemini)}
-                  className={`gemini-toggle ${useGemini ? 'active' : ''}`}
-                >
-                  {useGemini ? 'ON' : 'OFF'}
-                </button>
-              </div>
-              <button 
-                onClick={() => setShowAPIKeyManager(!showAPIKeyManager)}
-                className="api-key-manager-btn"
-              >
-                {showAPIKeyManager ? '설정 닫기' : 'API 키 관리'}
-              </button>
-            </div>
-            
-            <div className="gemini-status">
-              {useGemini ? (
-                apiKeys.length > 0 ? (
-                  <span className="status-active">✅ Gemini AI 활성화 ({apiKeys.length}개 키 등록됨)</span>
-                ) : (
-                  <span className="status-warning">⚠️ API 키를 추가해주세요</span>
-                )
-              ) : (
-                <span className="status-inactive">기본 응답 엔진 사용 중</span>
-              )}
-            </div>
-
-            {showAPIKeyManager && (
-              <div className="api-key-manager">
-                <div className="api-key-input-section">
-                  <input
-                    type="text"
-                    value={newApiKey}
-                    onChange={(e) => setNewApiKey(e.target.value)}
-                    placeholder="Gemini API 키를 입력하세요 (AIza...)"
-                    className="api-key-input"
-                    onKeyDown={(e) => e.key === 'Enter' && handleAddAPIKey()}
-                  />
-                  <button onClick={handleAddAPIKey} className="add-key-btn">
-                    ➕ 추가
+          {/* Gemini AI 설정 패널 - 모달 형태 */}
+          {showAPIKeyManager && (
+            <div className="settings-modal-overlay" onClick={() => setShowAPIKeyManager(false)}>
+              <div className="settings-modal" onClick={(e) => e.stopPropagation()}>
+                <div className="modal-header">
+                  <h3>🤖 Gemini AI 설정</h3>
+                  <button 
+                    onClick={() => setShowAPIKeyManager(false)}
+                    className="modal-close-btn"
+                  >
+                    ✕
                   </button>
                 </div>
+                
+                <div className="modal-body">
+                  <div className="gemini-toggle-section">
+                    <div className="toggle-info">
+                      <h4>AI 대화 엔진</h4>
+                      <p>Gemini AI로 더 자연스럽고 다양한 대화를 경험하세요</p>
+                    </div>
+                    <button 
+                      onClick={() => setUseGemini(!useGemini)}
+                      className={`toggle-switch ${useGemini ? 'active' : ''}`}
+                    >
+                      <span className="toggle-slider"></span>
+                      <span className="toggle-label">{useGemini ? 'ON' : 'OFF'}</span>
+                    </button>
+                  </div>
 
-                {apiKeys.length > 0 ? (
-                  <div className="api-key-list">
-                    <div className="api-key-list-header">
-                      <span>등록된 API 키 ({apiKeys.length}개)</span>
-                      <button onClick={handleResetFailedKeys} className="reset-failed-btn" title="실패한 키 초기화">
-                        🔄 실패 키 초기화
+                  <div className="gemini-status-box">
+                    {useGemini ? (
+                      apiKeys.length > 0 ? (
+                        <span className="status-active">✅ Gemini AI 활성화 ({apiKeys.length}개 키 등록됨)</span>
+                      ) : (
+                        <span className="status-warning">⚠️ API 키를 추가해주세요</span>
+                      )
+                    ) : (
+                      <span className="status-inactive">기본 응답 엔진 사용 중</span>
+                    )}
+                  </div>
+
+                  <div className="api-key-section">
+                    <h4>API 키 관리</h4>
+                    <div className="api-key-input-section">
+                      <input
+                        type="text"
+                        value={newApiKey}
+                        onChange={(e) => setNewApiKey(e.target.value)}
+                        placeholder="Gemini API 키를 입력하세요 (AIza...)"
+                        className="api-key-input"
+                        onKeyDown={(e) => e.key === 'Enter' && handleAddAPIKey()}
+                      />
+                      <button onClick={handleAddAPIKey} className="add-key-btn">
+                        ➕ 추가
                       </button>
                     </div>
-                    {apiKeys.map((key, index) => (
-                      <div key={index} className="api-key-item">
-                        <span className="key-index">#{index + 1}</span>
-                        <span className="key-preview">{key.substring(0, 15)}...{key.substring(key.length - 4)}</span>
-                        <button 
-                          onClick={() => handleRemoveAPIKey(key)}
-                          className="remove-key-btn"
-                          title="삭제"
-                        >
-                          🗑️
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="no-keys-message">
-                    <p>📝 등록된 API 키가 없습니다</p>
-                    <p className="help-text">
-                      <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer">
-                        Google AI Studio
-                      </a>에서 무료 API 키를 발급받으세요
-                    </p>
-                  </div>
-                )}
 
-                <div className="api-key-info">
-                  <h4>💡 API 키 로테이션 시스템</h4>
-                  <ul>
-                    <li>여러 개의 API 키를 등록하면 자동으로 순환하며 사용합니다</li>
-                    <li>한 키가 한도 초과 시 자동으로 다음 키로 전환됩니다</li>
-                    <li>모든 키는 브라우저에 안전하게 저장됩니다</li>
-                    <li>Gemini 2.5 Flash는 무료로 사용 가능합니다</li>
-                  </ul>
+                    {apiKeys.length > 0 ? (
+                      <div className="api-key-list">
+                        <div className="api-key-list-header">
+                          <span>등록된 API 키 ({apiKeys.length}개)</span>
+                          <button onClick={handleResetFailedKeys} className="reset-failed-btn" title="실패한 키 초기화">
+                            🔄 초기화
+                          </button>
+                        </div>
+                        {apiKeys.map((key, index) => (
+                          <div key={index} className="api-key-item">
+                            <span className="key-index">#{index + 1}</span>
+                            <span className="key-preview">{key.substring(0, 15)}...{key.substring(key.length - 4)}</span>
+                            <button 
+                              onClick={() => handleRemoveAPIKey(key)}
+                              className="remove-key-btn"
+                              title="삭제"
+                            >
+                              🗑️
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="no-keys-message">
+                        <p>📝 등록된 API 키가 없습니다</p>
+                        <p className="help-text">
+                          <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer">
+                            Google AI Studio
+                          </a>에서 무료 API 키를 발급받으세요
+                        </p>
+                      </div>
+                    )}
+
+                    <div className="api-key-info">
+                      <h4>💡 API 키 로테이션 시스템</h4>
+                      <ul>
+                        <li>여러 개의 API 키를 등록하면 자동으로 순환하며 사용합니다</li>
+                        <li>한 키가 한도 초과 시 자동으로 다음 키로 전환됩니다</li>
+                        <li>모든 키는 브라우저에 안전하게 저장됩니다</li>
+                        <li>Gemini 2.5 Flash는 무료로 사용 가능합니다</li>
+                      </ul>
+                    </div>
+                  </div>
                 </div>
               </div>
-            )}
-          </div>
+            </div>
+          )}
           
           {micPermission !== 'granted' && (
             <div className="mic-permission-banner">
@@ -1246,32 +1349,8 @@ function CustomerSimulator() {
             </div>
           )}
 
-          {voiceEnabled && availableVoices.length > 0 && (
-            <div className="voice-settings">
-              <span>🎙️ 고객 음성:</span>
-              <select 
-                value={selectedVoice?.name || ''} 
-                onChange={(e) => {
-                  const voice = availableVoices.find(v => v.name === e.target.value)
-                  setSelectedVoice(voice)
-                }}
-                className="voice-select"
-              >
-                {availableVoices.map(voice => (
-                  <option key={voice.name} value={voice.name}>
-                    {voice.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-          )}
-
           {handsFreeMode && (
-            <div 
-              className="handsfree-status"
-              onClick={handleMobileTouchToSpeak}
-              style={{ cursor: (!isListening && !isSpeaking && !isWaitingForSpeech) ? 'pointer' : 'default' }}
-            >
+            <div className="handsfree-status">
               <div className="status-indicator">
                 {isSpeaking ? (
                   <span className="status-speaking">🔊 고객이 말하는 중...</span>
@@ -1280,51 +1359,43 @@ function CustomerSimulator() {
                 ) : isListening ? (
                   <span className="status-listening">🎤 당신 차례입니다. 말씀하세요!</span>
                 ) : (
-                  <span className="status-ready">✅ 대화 준비 완료 - 화면 터치하여 시작</span>
+                  <span className="status-ready">✅ 대화 준비 완료</span>
                 )}
               </div>
               <p className="handsfree-tip">
                 {/iPhone|iPad|iPod|Android/i.test(navigator.userAgent) 
-                  ? '💡 화면을 터치하면 음성 인식이 시작됩니다' 
-                  : '💡 핸즈프리 모드: 버튼 없이 자연스럽게 대화하세요'}
+                  ? '💡 아래 마이크 버튼을 눌러 말하세요' 
+                  : '💡 핸즈프리 모드: 아래 마이크 버튼 클릭'}
               </p>
             </div>
           )}
 
           {activeMissions.length > 0 && (
             <div className="active-missions">
-              <h4>🎯 진행 중인 미션</h4>
-              <div className="mission-list">
-                {activeMissions.map(mission => (
-                  <div key={mission.id} className="mission-item">
-                    <span className="mission-icon">{mission.icon}</span>
-                    <div className="mission-info">
-                      <div className="mission-title">{mission.title}</div>
-                      <div className="mission-desc">{mission.description}</div>
-                    </div>
-                    <div className="mission-reward">+{mission.reward.exp} EXP</div>
-                  </div>
-                ))}
+              <div 
+                className="missions-header" 
+                onClick={() => setShowMissions(!showMissions)}
+                style={{ cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
+              >
+                <h4>🎯 진행 중인 미션 ({activeMissions.length})</h4>
+                <span style={{ fontSize: '1.2rem', transition: 'transform 0.3s', transform: showMissions ? 'rotate(180deg)' : 'rotate(0deg)' }}>
+                  ▼
+                </span>
               </div>
-            </div>
-          )}
-
-          {!isListening && (
-            <div className="mobile-voice-guide">
-              <p>📱 모바일에서 음성이 안 되나요?</p>
-              <details>
-                <summary>해결 방법 보기</summary>
-                <ol>
-                  <li>주소창 왼쪽의 아이콘(🔒 또는 ⓘ) 터치</li>
-                  <li>"사이트 설정" 또는 "권한" 선택</li>
-                  <li>"마이크" 찾아서 "허용"으로 변경</li>
-                  <li>페이지 새로고침 (F5 또는 당겨서 새로고침)</li>
-                </ol>
-                <p style={{marginTop: '10px', fontSize: '14px', color: '#666'}}>
-                  💡 팁: 한 번 차단하면 자동으로 다시 요청하지 않아요. 
-                  위 방법으로 직접 허용해주셔야 합니다.
-                </p>
-              </details>
+              {showMissions && (
+                <div className="mission-list">
+                  {activeMissions.map(mission => (
+                    <div key={mission.id} className="mission-item">
+                      <span className="mission-icon">{mission.icon}</span>
+                      <div className="mission-info">
+                        <div className="mission-title">{mission.title}</div>
+                        <div className="mission-desc">{mission.description}</div>
+                      </div>
+                      <div className="mission-reward">+{mission.reward.exp} EXP</div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           )}
 
@@ -1421,7 +1492,15 @@ function CustomerSimulator() {
                   ) : isWaitingForSpeech ? (
                     <p>⏳ 잠시만 기다려주세요...</p>
                   ) : (
-                    <p>✅ 대화 준비 완료</p>
+                    <>
+                      <p>✅ 대화 준비 완료</p>
+                      <button 
+                        onClick={handleMobileTouchToSpeak}
+                        className="inline-mic-btn"
+                      >
+                        🎤 말하기
+                      </button>
+                    </>
                   )}
                 </div>
                 {/* 숨겨진 전송 버튼 - 자동 전송용 */}
@@ -1433,16 +1512,6 @@ function CustomerSimulator() {
         </div>
       )}
 
-      {/* 모바일 터치 버튼 - 핸즈프리 모드일 때만 표시 (simulation-area 밖에 배치) */}
-      {selectedCustomer && !showReport && handsFreeMode && (
-        <button 
-          onClick={handleMobileTouchToSpeak}
-          className={`mobile-speak-btn-fixed ${isListening ? 'listening' : ''}`}
-          style={{ display: (isListening || isSpeaking || isWaitingForSpeech) ? 'none' : 'block' }}
-        >
-          🎤 터치하여 말하기
-        </button>
-      )}
     </div>
   )
 }

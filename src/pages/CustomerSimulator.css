@@ -223,12 +223,13 @@
 .simulation-area {
   display: flex;
   flex-direction: column;
-  min-height: 600px;
+  min-height: 700px;
 }
 
 .conversation-area {
   flex: 1;
-  min-height: 400px;
+  min-height: 550px;
+  max-height: 700px;
   overflow-y: auto;
   padding: 20px;
   background: #f8f9fa;
@@ -333,8 +334,20 @@
     gap: 15px;
   }
   
+  .simulation-area {
+    min-height: calc(100vh - 150px);
+    padding: 20px 15px;
+  }
+  
   .conversation-area {
-    height: 300px;
+    min-height: calc(100vh - 400px);
+    max-height: calc(100vh - 300px);
+    flex: 1;
+  }
+  
+  .handsfree-input-area {
+    min-height: 60px;
+    padding: 15px;
   }
 }
 
@@ -440,35 +453,58 @@
 
 /* 미션 */
 .active-missions {
-  margin: 15px 0;
-  padding: 15px;
+  margin: 10px 0;
+  padding: 12px 15px;
   background: #fff3cd;
   border-radius: 10px;
   border-left: 4px solid #ffc107;
 }
 
+.missions-header {
+  user-select: none;
+  padding: 5px 0;
+}
+
+.missions-header:hover {
+  opacity: 0.8;
+}
+
 .active-missions h4 {
-  margin-bottom: 10px;
+  margin: 0;
   color: #856404;
+  font-size: 0.9375rem;
 }
 
 .mission-list {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px;
+  margin-top: 10px;
+  animation: slideDown 0.3s ease;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .mission-item {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 10px;
+  padding: 8px;
   background: white;
   border-radius: 8px;
 }
 
 .mission-icon {
-  font-size: 24px;
+  font-size: 1.25rem;
 }
 
 .mission-info {
@@ -478,21 +514,23 @@
 .mission-title {
   font-weight: bold;
   color: #333;
-  margin-bottom: 3px;
+  margin-bottom: 2px;
+  font-size: 0.875rem;
 }
 
 .mission-desc {
-  font-size: 12px;
+  font-size: 0.75rem;
   color: #666;
 }
 
 .mission-reward {
-  padding: 5px 10px;
+  padding: 4px 8px;
   background: #4CAF50;
   color: white;
   border-radius: 5px;
-  font-size: 12px;
+  font-size: 0.75rem;
   font-weight: bold;
+  white-space: nowrap;
 }
 
 /* 실시간 피드백 */
@@ -1054,18 +1092,18 @@
 
 /* 핸즈프리 상태 표시 */
 .handsfree-status {
-  padding: 20px;
+  padding: 12px 15px;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  border-radius: 15px;
-  margin: 15px 0;
+  border-radius: 10px;
+  margin: 8px 0;
   color: white;
   text-align: center;
 }
 
 .status-indicator {
-  font-size: 24px;
+  font-size: 0.9375rem;
   font-weight: bold;
-  margin-bottom: 10px;
+  margin-bottom: 5px;
 }
 
 .status-speaking {
@@ -1096,18 +1134,19 @@
 }
 
 .handsfree-tip {
-  font-size: 14px;
-  margin: 10px 0 0 0;
+  font-size: 0.75rem;
+  margin: 5px 0 0 0;
   opacity: 0.9;
 }
 
 /* 핸즈프리 입력 영역 */
+/* 핸즈프리 입력 영역 */
 .handsfree-input-area {
-  padding: 40px 20px;
+  padding: 20px;
   background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
   border-radius: 15px;
   text-align: center;
-  min-height: 150px;
+  min-height: 80px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1118,20 +1157,43 @@
 }
 
 .handsfree-message p {
-  font-size: 18px;
+  font-size: 16px;
   font-weight: bold;
   color: #333;
-  margin: 10px 0;
+  margin: 5px 0;
 }
 
 .recognized-text {
-  font-size: 16px;
+  font-size: 14px;
   color: #667eea;
   font-style: italic;
-  margin-top: 15px;
-  padding: 10px;
+  margin-top: 10px;
+  padding: 8px;
   background: white;
   border-radius: 8px;
+}
+
+.inline-mic-btn {
+  margin-top: 10px;
+  padding: 10px 24px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  border-radius: 50px;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+.inline-mic-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(102, 126, 234, 0.4);
+}
+
+.inline-mic-btn:active {
+  transform: translateY(0);
 }
 
 /* 듣는 중 애니메이션 */
@@ -1458,117 +1520,228 @@
   }
 }
 
-/* Gemini AI 설정 패널 */
-.gemini-settings-panel {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  padding: 25px;
-  border-radius: 15px;
-  margin-bottom: 30px;
-  color: white;
-  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
-}
-
-.gemini-header {
+/* 설정 버튼 */
+.selection-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 15px;
-  flex-wrap: wrap;
-  gap: 15px;
+  margin-bottom: 30px;
 }
 
-.gemini-title {
-  display: flex;
-  align-items: center;
-  gap: 15px;
-}
-
-.gemini-icon {
-  font-size: 32px;
-}
-
-.gemini-title h3 {
-  margin: 0;
+.selection-header h2 {
   color: white;
-  font-size: 20px;
+  font-size: 28px;
+  margin: 0;
 }
 
-.gemini-toggle {
-  padding: 8px 20px;
+.settings-btn {
+  padding: 12px 24px;
   background: rgba(255, 255, 255, 0.2);
   color: white;
   border: 2px solid white;
   border-radius: 25px;
-  font-size: 14px;
+  font-size: 16px;
   font-weight: bold;
   cursor: pointer;
   transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
 }
 
-.gemini-toggle.active {
+.settings-btn:hover {
   background: white;
   color: #667eea;
-}
-
-.gemini-toggle:hover {
-  transform: scale(1.05);
-}
-
-.api-key-manager-btn {
-  padding: 10px 20px;
-  background: white;
-  color: #667eea;
-  border: none;
-  border-radius: 8px;
-  font-size: 14px;
-  font-weight: bold;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.api-key-manager-btn:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 4px 12px rgba(255, 255, 255, 0.3);
 }
 
-.gemini-status {
-  padding: 12px 20px;
-  background: rgba(255, 255, 255, 0.15);
-  border-radius: 8px;
-  text-align: center;
+/* 설정 모달 */
+.settings-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  padding: 20px;
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.settings-modal {
+  background: white;
+  border-radius: 20px;
+  max-width: 600px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(50px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 25px 30px;
+  border-bottom: 2px solid #f0f0f0;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 20px 20px 0 0;
+}
+
+.modal-header h3 {
+  margin: 0;
+  color: white;
+  font-size: 24px;
+}
+
+.modal-close-btn {
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  border: none;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  font-size: 24px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+}
+
+.modal-close-btn:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: rotate(90deg);
+}
+
+.modal-body {
+  padding: 30px;
+}
+
+/* Gemini 토글 섹션 */
+.gemini-toggle-section {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px;
+  background: linear-gradient(135deg, #f5f7ff 0%, #e8ecff 100%);
+  border-radius: 12px;
+  margin-bottom: 25px;
+}
+
+.toggle-info h4 {
+  margin: 0 0 8px 0;
+  color: #667eea;
+  font-size: 18px;
+}
+
+.toggle-info p {
+  margin: 0;
+  color: #666;
   font-size: 14px;
 }
 
-.status-active {
+.toggle-switch {
+  position: relative;
+  width: 80px;
+  height: 40px;
+  background: #ccc;
+  border-radius: 25px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  padding: 0 5px;
+}
+
+.toggle-switch.active {
+  background: #4CAF50;
+}
+
+.toggle-slider {
+  position: absolute;
+  width: 30px;
+  height: 30px;
+  background: white;
+  border-radius: 50%;
+  transition: all 0.3s ease;
+  left: 5px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.toggle-switch.active .toggle-slider {
+  left: 45px;
+}
+
+.toggle-label {
+  position: absolute;
+  right: 10px;
+  color: white;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.toggle-switch.active .toggle-label {
+  left: 10px;
+  right: auto;
+}
+
+/* 상태 박스 */
+.gemini-status-box {
+  padding: 15px;
+  background: #f8f9ff;
+  border-radius: 10px;
+  text-align: center;
+  margin-bottom: 25px;
+  border: 2px solid #e8ecff;
+}
+
+.gemini-status-box .status-active {
   color: #4CAF50;
   font-weight: bold;
-  background: white;
-  padding: 8px 16px;
-  border-radius: 20px;
-  display: inline-block;
+  font-size: 15px;
 }
 
-.status-warning {
+.gemini-status-box .status-warning {
   color: #FF9800;
   font-weight: bold;
-  background: white;
-  padding: 8px 16px;
-  border-radius: 20px;
-  display: inline-block;
+  font-size: 15px;
 }
 
-.status-inactive {
-  color: white;
-  opacity: 0.8;
+.gemini-status-box .status-inactive {
+  color: #999;
+  font-size: 15px;
 }
 
-/* API 키 관리자 */
-.api-key-manager {
-  margin-top: 20px;
-  padding: 20px;
-  background: white;
-  border-radius: 10px;
+/* API 키 섹션 */
+.api-key-section h4 {
+  margin: 0 0 15px 0;
   color: #333;
+  font-size: 16px;
 }
 
 .api-key-input-section {
@@ -1742,9 +1915,42 @@
 
 /* 반응형 - Gemini 설정 */
 @media (max-width: 768px) {
-  .gemini-settings-panel {
+  .settings-modal {
+    max-width: 95%;
+    max-height: 95vh;
+  }
+
+  .modal-header {
     padding: 20px;
   }
+
+  .modal-header h3 {
+    font-size: 20px;
+  }
+
+  .modal-body {
+    padding: 20px;
+  }
+
+  .gemini-toggle-section {
+    flex-direction: column;
+    gap: 15px;
+    text-align: center;
+  }
+
+  .api-key-input-section {
+    flex-direction: column;
+  }
+
+  .add-key-btn {
+    width: 100%;
+  }
+
+  .settings-btn {
+    padding: 10px 20px;
+    font-size: 14px;
+  }
+}
   
   .gemini-header {
     flex-direction: column;

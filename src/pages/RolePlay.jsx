@@ -50,9 +50,9 @@ function RolePlay() {
   const scenarios = [
     {
       id: 1,
-      title: '첫 방문 고객 응대',
+      title: '첫 방문 고객',
       icon: '👋',
-      description: '처음 방문한 고객에게 서비스를 소개하고 신뢰를 구축하세요',
+      description: '신규 고객과의 첫 만남에서 신뢰를 구축하고 니즈를 파악하세요',
       persona: {
         name: '첫 방문 고객',
         personality: '처음 만나는 영업사원에게 조심스럽고 경계심이 있습니다. 서비스에 대해 잘 모르고, 왜 필요한지 확신이 없습니다.',
@@ -64,7 +64,7 @@ function RolePlay() {
       id: 2,
       title: '가격 협상',
       icon: '💰',
-      description: '가격에 민감한 고객을 설득하고 가치를 전달하세요',
+      description: '가격 민감 고객에게 가치를 전달하고 합리적 결정을 유도하세요',
       persona: {
         name: '가격 민감형 고객',
         personality: '가격이 제일 중요하고, 할인이나 프로모션에 관심이 많습니다. 다른 곳과 비교를 많이 하고, 추가 비용을 매우 걱정합니다.',
@@ -74,9 +74,9 @@ function RolePlay() {
     },
     {
       id: 3,
-      title: '제품 비교 설명',
+      title: '제품 비교',
       icon: '🔍',
-      description: '경쟁사 제품과 비교하며 코웨이의 차별점을 설명하세요',
+      description: '경쟁사 대비 차별점을 명확히 제시하고 우위를 입증하세요',
       persona: {
         name: '비교 검토형 고객',
         personality: '여러 제품을 꼼꼼히 비교하고 신중하게 결정합니다. 데이터와 사실을 중시하며, 경쟁사 제품에 대해 많이 알고 있습니다.',
@@ -88,7 +88,7 @@ function RolePlay() {
       id: 4,
       title: '거절 대응',
       icon: '🛡️',
-      description: '고객의 거절을 극복하고 재제안하세요',
+      description: '고객의 거절을 긍정적으로 전환하고 재기회를 창출하세요',
       persona: {
         name: '거절하는 고객',
         personality: '처음부터 관심이 없거나, 이미 다른 제품을 사용 중입니다. 영업사원을 빨리 보내고 싶어합니다.',
@@ -100,7 +100,7 @@ function RolePlay() {
       id: 5,
       title: '클로징',
       icon: '🎯',
-      description: '관심 있는 고객을 계약으로 이끄세요',
+      description: '관심 고객의 마지막 망설임을 해소하고 계약을 성사시키세요',
       persona: {
         name: '관심 있는 고객',
         personality: '제품에 관심이 있지만 마지막 결정을 망설이고 있습니다. 좀 더 확신이 필요하거나 추가 혜택을 기대합니다.',
@@ -112,7 +112,7 @@ function RolePlay() {
       id: 6,
       title: '건강 관심 고객',
       icon: '🏥',
-      description: '건강과 위생을 중시하는 고객에게 효과를 설명하세요',
+      description: '건강 효과를 구체적으로 설명하고 가족의 웰빙을 강조하세요',
       persona: {
         name: '건강 관심형 고객',
         personality: '가족의 건강을 최우선으로 생각하며, 특히 아이나 노인이 있는 가정입니다. 효과에 대한 구체적인 설명을 원합니다.',
@@ -128,43 +128,24 @@ function RolePlay() {
     if (!SpeechRecognition) return
 
     const recognitionInstance = new SpeechRecognition()
-    recognitionInstance.continuous = true // 계속 듣기 모드
+    recognitionInstance.continuous = false // 단일 발화 모드로 변경
     recognitionInstance.interimResults = true
     recognitionInstance.lang = 'ko-KR'
 
-    let finalTranscript = ''
-    let silenceTimer = null
-
     recognitionInstance.onstart = () => {
+      console.log('🎤 음성 인식 시작')
       setIsListening(true)
-      finalTranscript = ''
     }
     
     recognitionInstance.onresult = (event) => {
-      let interimTranscript = ''
-      
+      let transcript = ''
       for (let i = event.resultIndex; i < event.results.length; i++) {
-        const transcript = event.results[i][0].transcript
-        if (event.results[i].isFinal) {
-          finalTranscript += transcript
-        } else {
-          interimTranscript += transcript
-        }
+        transcript += event.results[i][0].transcript
       }
       
-      const fullTranscript = finalTranscript + interimTranscript
-      setUserInput(fullTranscript)
-      userInputRef.current = fullTranscript
-      
-      // 침묵 타이머 리셋 - 말이 끝나고 2초 후 자동 전송
-      if (silenceTimer) clearTimeout(silenceTimer)
-      
-      silenceTimer = setTimeout(() => {
-        if (finalTranscript.trim()) {
-          console.log('✅ 침묵 감지 - 말이 끝난 것으로 판단')
-          recognitionInstance.stop()
-        }
-      }, 2000) // 2초 침묵 후 종료
+      console.log('인식된 텍스트:', transcript)
+      setUserInput(transcript)
+      userInputRef.current = transcript
     }
 
     recognitionInstance.onerror = (event) => {
@@ -173,9 +154,13 @@ function RolePlay() {
     }
 
     recognitionInstance.onend = () => {
+      console.log('🛑 음성 인식 종료')
       setIsListening(false)
+      
+      // 핸즈프리 모드에서 텍스트가 있으면 자동 전송
       const currentInput = userInputRef.current
       if (handsFreeRef.current && currentInput && currentInput.trim()) {
+        console.log('핸즈프리: 자동 전송 -', currentInput)
         setTimeout(() => {
           if (handleSendRef.current) {
             handleSendRef.current()
@@ -525,11 +510,21 @@ function RolePlay() {
         audioUrl: recordedAudioUrl || null
       }
 
+      console.log('대화 저장 시도:', conversationData)
       await addDoc(collection(db, 'conversations'), conversationData)
       alert('✅ 대화가 저장되었습니다!')
     } catch (error) {
       console.error('대화 저장 실패:', error)
-      alert('❌ 저장 실패: ' + error.message)
+      console.error('에러 코드:', error.code)
+      console.error('에러 메시지:', error.message)
+      
+      if (error.code === 'permission-denied') {
+        alert('❌ 저장 실패: Firebase 권한이 없습니다. Firestore 규칙을 확인해주세요.')
+      } else if (error.code === 'unavailable') {
+        alert('❌ 저장 실패: 네트워크 연결을 확인해주세요.')
+      } else {
+        alert('❌ 저장 실패: ' + error.message)
+      }
     }
   }
 
@@ -622,229 +617,138 @@ function RolePlay() {
   return (
     <div className="roleplay">
       <div className="roleplay-header">
-        <h1>🎤 AI 롤플레잉 연습</h1>
-        <p>Gemini AI와 실전처럼 대화하며 연습하세요</p>
+        <h1>🎤 AI 롤플레잉</h1>
+        <p>Gemini AI와 실시간 음성 대화로 영업 스킬을 향상시키세요</p>
       </div>
 
       {!selectedScenario ? (
         <div className="scenarios-section">
-          {/* Gemini AI 설정 패널 */}
-          <div className="gemini-settings-panel" style={{
-            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-            padding: '25px',
-            borderRadius: '15px',
-            marginBottom: '30px',
-            color: 'white',
-            boxShadow: '0 4px 15px rgba(102, 126, 234, 0.3)'
-          }}>
-            <div className="gemini-header" style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              marginBottom: '15px',
-              flexWrap: 'wrap',
-              gap: '15px'
-            }}>
-              <div className="gemini-title" style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '15px'
-              }}>
-                <span className="gemini-icon" style={{ fontSize: '32px' }}>🤖</span>
-                <h3 style={{ margin: 0, color: 'white', fontSize: '20px' }}>Gemini AI 대화 엔진</h3>
-                <button 
-                  onClick={() => setUseGemini(!useGemini)}
-                  className="gemini-toggle"
-                  style={{
-                    padding: '8px 20px',
-                    background: useGemini ? 'white' : 'rgba(255, 255, 255, 0.2)',
-                    color: useGemini ? '#667eea' : 'white',
-                    border: '2px solid white',
-                    borderRadius: '25px',
-                    fontSize: '14px',
-                    fontWeight: 'bold',
-                    cursor: 'pointer'
-                  }}
-                >
-                  {useGemini ? 'ON' : 'OFF'}
-                </button>
-              </div>
-              <button 
-                onClick={() => setShowAPIKeyManager(!showAPIKeyManager)}
-                className="api-key-manager-btn"
-                style={{
-                  padding: '10px 20px',
-                  background: 'white',
-                  color: '#667eea',
-                  border: 'none',
-                  borderRadius: '8px',
-                  fontSize: '14px',
-                  fontWeight: 'bold',
-                  cursor: 'pointer'
-                }}
-              >
-                {showAPIKeyManager ? '설정 닫기' : 'API 키 관리'}
-              </button>
-            </div>
-            
-            <div className="gemini-status" style={{
-              padding: '12px 20px',
-              background: 'rgba(255, 255, 255, 0.15)',
-              borderRadius: '8px',
-              textAlign: 'center',
-              fontSize: '14px'
-            }}>
-              {useGemini ? (
-                apiKeys.length > 0 ? (
-                  <span style={{
-                    color: '#4CAF50',
-                    fontWeight: 'bold',
-                    background: 'white',
-                    padding: '8px 16px',
-                    borderRadius: '20px',
-                    display: 'inline-block'
-                  }}>✅ Gemini AI 활성화 ({apiKeys.length}개 키 등록됨)</span>
-                ) : (
-                  <span style={{
-                    color: '#FF9800',
-                    fontWeight: 'bold',
-                    background: 'white',
-                    padding: '8px 16px',
-                    borderRadius: '20px',
-                    display: 'inline-block'
-                  }}>⚠️ API 키를 추가해주세요</span>
-                )
-              ) : (
-                <span style={{ color: 'white', opacity: 0.8 }}>기본 응답 엔진 사용 중</span>
-              )}
-            </div>
-
-            {showAPIKeyManager && (
-              <div className="api-key-manager" style={{
-                marginTop: '20px',
-                padding: '20px',
-                background: 'white',
-                borderRadius: '10px',
-                color: '#333'
-              }}>
-                <div className="api-key-input-section" style={{
-                  display: 'flex',
-                  gap: '10px',
-                  marginBottom: '20px'
-                }}>
-                  <input
-                    type="text"
-                    value={newApiKey}
-                    onChange={(e) => setNewApiKey(e.target.value)}
-                    placeholder="Gemini API 키를 입력하세요 (AIza...)"
-                    style={{
-                      flex: 1,
-                      padding: '12px 16px',
-                      border: '2px solid #e0e0e0',
-                      borderRadius: '8px',
-                      fontSize: '14px'
-                    }}
-                    onKeyDown={(e) => e.key === 'Enter' && handleAddAPIKey()}
-                  />
-                  <button onClick={handleAddAPIKey} style={{
-                    padding: '12px 24px',
-                    background: '#4CAF50',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '8px',
-                    fontSize: '14px',
-                    fontWeight: 'bold',
-                    cursor: 'pointer'
-                  }}>
-                    ➕ 추가
+          <div className="selection-header">
+            <h2 style={{ color: 'white', fontSize: '28px', margin: 0 }}>시나리오를 선택하세요</h2>
+            <button 
+              onClick={() => setShowAPIKeyManager(!showAPIKeyManager)}
+              className="settings-btn"
+              style={{
+                padding: '12px 24px',
+                background: 'rgba(255, 255, 255, 0.2)',
+                color: 'white',
+                border: '2px solid white',
+                borderRadius: '25px',
+                fontSize: '16px',
+                fontWeight: 'bold',
+                cursor: 'pointer',
+                transition: 'all 0.3s ease'
+              }}
+            >
+              ⚙️ 설정
+            </button>
+          </div>
+          
+          {/* 설정 모달 */}
+          {showAPIKeyManager && (
+            <div className="settings-modal-overlay" onClick={() => setShowAPIKeyManager(false)}>
+              <div className="settings-modal" onClick={(e) => e.stopPropagation()}>
+                <div className="modal-header">
+                  <h3>🤖 Gemini AI 설정</h3>
+                  <button 
+                    onClick={() => setShowAPIKeyManager(false)}
+                    className="modal-close-btn"
+                  >
+                    ✕
                   </button>
                 </div>
+                
+                <div className="modal-body">
+                  <div className="gemini-toggle-section">
+                    <div className="toggle-info">
+                      <h4>AI 대화 엔진</h4>
+                      <p>Gemini AI로 더 자연스럽고 다양한 대화를 경험하세요</p>
+                    </div>
+                    <button 
+                      onClick={() => setUseGemini(!useGemini)}
+                      className={`toggle-switch ${useGemini ? 'active' : ''}`}
+                    >
+                      <span className="toggle-slider"></span>
+                      <span className="toggle-label">{useGemini ? 'ON' : 'OFF'}</span>
+                    </button>
+                  </div>
 
-                {apiKeys.length > 0 ? (
-                  <div className="api-key-list">
-                    <div style={{
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      alignItems: 'center',
-                      marginBottom: '15px',
-                      paddingBottom: '10px',
-                      borderBottom: '2px solid #e0e0e0'
-                    }}>
-                      <span style={{ fontWeight: 'bold', color: '#333' }}>등록된 API 키 ({apiKeys.length}개)</span>
-                      <button onClick={handleResetFailedKeys} style={{
-                        padding: '6px 12px',
-                        background: '#FF9800',
-                        color: 'white',
-                        border: 'none',
-                        borderRadius: '5px',
-                        fontSize: '12px',
-                        cursor: 'pointer'
-                      }}>
-                        🔄 실패 키 초기화
+                  <div className="gemini-status-box">
+                    {useGemini ? (
+                      apiKeys.length > 0 ? (
+                        <span className="status-active">✅ Gemini AI 활성화 ({apiKeys.length}개 키 등록됨)</span>
+                      ) : (
+                        <span className="status-warning">⚠️ API 키를 추가해주세요</span>
+                      )
+                    ) : (
+                      <span className="status-inactive">기본 응답 엔진 사용 중</span>
+                    )}
+                  </div>
+
+                  <div className="api-key-section">
+                    <h4>API 키 관리</h4>
+                    <div className="api-key-input-section">
+                      <input
+                        type="text"
+                        value={newApiKey}
+                        onChange={(e) => setNewApiKey(e.target.value)}
+                        placeholder="Gemini API 키를 입력하세요 (AIza...)"
+                        className="api-key-input"
+                        onKeyDown={(e) => e.key === 'Enter' && handleAddAPIKey()}
+                      />
+                      <button onClick={handleAddAPIKey} className="add-key-btn">
+                        ➕ 추가
                       </button>
                     </div>
-                    {apiKeys.map((key, index) => (
-                      <div key={index} style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '15px',
-                        padding: '12px 15px',
-                        background: '#f8f9fa',
-                        borderRadius: '8px',
-                        marginBottom: '10px'
-                      }}>
-                        <span style={{ fontWeight: 'bold', color: '#667eea', minWidth: '30px' }}>#{index + 1}</span>
-                        <span style={{ flex: 1, fontFamily: 'monospace', fontSize: '13px', color: '#666' }}>
-                          {key.substring(0, 15)}...{key.substring(key.length - 4)}
-                        </span>
-                        <button 
-                          onClick={() => handleRemoveAPIKey(key)}
-                          style={{
-                            padding: '6px 12px',
-                            background: '#f44336',
-                            color: 'white',
-                            border: 'none',
-                            borderRadius: '5px',
-                            fontSize: '16px',
-                            cursor: 'pointer'
-                          }}
-                        >
-                          🗑️
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div style={{ textAlign: 'center', padding: '30px', color: '#666' }}>
-                    <p>📝 등록된 API 키가 없습니다</p>
-                    <p style={{ fontSize: '14px', color: '#999' }}>
-                      <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer" style={{ color: '#667eea', textDecoration: 'none', fontWeight: 'bold' }}>
-                        Google AI Studio
-                      </a>에서 무료 API 키를 발급받으세요
-                    </p>
-                  </div>
-                )}
 
-                <div style={{
-                  padding: '15px',
-                  background: '#e3f2fd',
-                  borderRadius: '8px',
-                  borderLeft: '4px solid #2196F3',
-                  marginTop: '15px'
-                }}>
-                  <h4 style={{ margin: '0 0 10px 0', color: '#1976D2', fontSize: '16px' }}>💡 API 키 로테이션 시스템</h4>
-                  <ul style={{ margin: 0, paddingLeft: '20px', color: '#555' }}>
-                    <li style={{ margin: '8px 0', lineHeight: 1.5, fontSize: '13px' }}>여러 개의 API 키를 등록하면 자동으로 순환하며 사용합니다</li>
-                    <li style={{ margin: '8px 0', lineHeight: 1.5, fontSize: '13px' }}>한 키가 한도 초과 시 자동으로 다음 키로 전환됩니다</li>
-                    <li style={{ margin: '8px 0', lineHeight: 1.5, fontSize: '13px' }}>모든 키는 브라우저에 안전하게 저장됩니다</li>
-                    <li style={{ margin: '8px 0', lineHeight: 1.5, fontSize: '13px' }}>Gemini 2.5 Flash는 무료로 사용 가능합니다</li>
-                  </ul>
+                    {apiKeys.length > 0 ? (
+                      <div className="api-key-list">
+                        <div className="api-key-list-header">
+                          <span>등록된 API 키 ({apiKeys.length}개)</span>
+                          <button onClick={handleResetFailedKeys} className="reset-failed-btn">
+                            🔄 초기화
+                          </button>
+                        </div>
+                        {apiKeys.map((key, index) => (
+                          <div key={index} className="api-key-item">
+                            <span className="key-index">#{index + 1}</span>
+                            <span className="key-preview">{key.substring(0, 15)}...{key.substring(key.length - 4)}</span>
+                            <button 
+                              onClick={() => handleRemoveAPIKey(key)}
+                              className="remove-key-btn"
+                            >
+                              🗑️
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="no-keys-message">
+                        <p>📝 등록된 API 키가 없습니다</p>
+                        <p className="help-text">
+                          <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer">
+                            Google AI Studio
+                          </a>에서 무료 API 키를 발급받으세요
+                        </p>
+                      </div>
+                    )}
+
+                    <div className="api-key-info">
+                      <h4>💡 API 키 로테이션 시스템</h4>
+                      <ul>
+                        <li>여러 개의 API 키를 등록하면 자동으로 순환하며 사용합니다</li>
+                        <li>한 키가 한도 초과 시 자동으로 다음 키로 전환됩니다</li>
+                        <li>모든 키는 브라우저에 안전하게 저장됩니다</li>
+                        <li>Gemini 2.5 Flash는 무료로 사용 가능합니다</li>
+                      </ul>
+                    </div>
+                  </div>
                 </div>
               </div>
-            )}
-          </div>
-
-          <h2>연습 시나리오 선택</h2>
+            </div>
+          )}
+          
+          <h2 style={{ color: 'white', textAlign: 'center', marginTop: '30px', marginBottom: '20px' }}>연습 시나리오 선택</h2>
           <div className="scenarios-grid">
             {scenarios.map(scenario => (
               <div key={scenario.id} className="scenario-card">
@@ -999,11 +903,7 @@ function RolePlay() {
           </div>
 
           {handsFreeMode && (
-            <div 
-              className="handsfree-status"
-              onClick={handleMobileTouchToSpeak}
-              style={{ cursor: (!isListening && !isSpeaking && !isWaitingForSpeech) ? 'pointer' : 'default' }}
-            >
+            <div className="handsfree-status">
               <div className="status-indicator">
                 {isSpeaking ? (
                   <span className="status-speaking">🔊 고객이 말하는 중...</span>
@@ -1012,13 +912,13 @@ function RolePlay() {
                 ) : isListening ? (
                   <span className="status-listening">🎤 당신 차례입니다. 말씀하세요!</span>
                 ) : (
-                  <span className="status-ready">✅ 대화 준비 완료 - 화면 터치하여 시작</span>
+                  <span className="status-ready">✅ 대화 준비 완료</span>
                 )}
               </div>
               <p className="handsfree-tip">
                 {/iPhone|iPad|iPod|Android/i.test(navigator.userAgent) 
-                  ? '💡 화면을 터치하면 음성 인식이 시작됩니다' 
-                  : '💡 핸즈프리 모드: 버튼 없이 자연스럽게 대화하세요'}
+                  ? '💡 아래 마이크 버튼을 눌러 말하세요' 
+                  : '💡 핸즈프리 모드: 아래 마이크 버튼 클릭'}
               </p>
             </div>
           )}
@@ -1104,7 +1004,15 @@ function RolePlay() {
                   ) : isWaitingForSpeech ? (
                     <p>⏳ 잠시만 기다려주세요...</p>
                   ) : (
-                    <p>✅ 대화 준비 완료</p>
+                    <>
+                      <p>✅ 대화 준비 완료</p>
+                      <button 
+                        onClick={handleMobileTouchToSpeak}
+                        className="inline-mic-btn"
+                      >
+                        🎤 말하기
+                      </button>
+                    </>
                   )}
                 </div>
               </div>
@@ -1113,16 +1021,6 @@ function RolePlay() {
         </div>
       )}
 
-      {/* 모바일 터치 버튼 - 핸즈프리 모드일 때만 표시 */}
-      {selectedScenario && !showReport && handsFreeMode && (
-        <button 
-          onClick={handleMobileTouchToSpeak}
-          className={`mobile-speak-btn-fixed ${isListening ? 'listening' : ''}`}
-          style={{ display: (isListening || isSpeaking || isWaitingForSpeech) ? 'none' : 'block' }}
-        >
-          🎤 터치하여 말하기
-        </button>
-      )}
     </div>
   )
 }

@@ -741,7 +741,7 @@
   box-shadow: 0 10px 30px rgba(0,0,0,0.1);
   display: flex;
   flex-direction: column;
-  min-height: 600px;
+  min-height: 700px;
 }
 
 .simulation-header {
@@ -820,7 +820,8 @@
 
 .conversation-area {
   flex: 1;
-  min-height: 400px;
+  min-height: 550px;
+  max-height: 700px;
   overflow-y: auto;
   padding: 20px;
   background: #f8f9fa;
@@ -935,11 +936,11 @@
 }
 
 .handsfree-input-area {
-  padding: 40px 20px;
+  padding: 20px;
   background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
   border-radius: 15px;
   text-align: center;
-  min-height: 150px;
+  min-height: 80px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -951,18 +952,41 @@
 }
 
 .handsfree-message p {
-  font-size: 18px;
+  font-size: 16px;
   font-weight: bold;
   color: #333;
-  margin: 10px 0;
+  margin: 5px 0;
+}
+
+.inline-mic-btn {
+  margin-top: 10px;
+  padding: 10px 24px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  border-radius: 50px;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+.inline-mic-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(102, 126, 234, 0.4);
+}
+
+.inline-mic-btn:active {
+  transform: translateY(0);
 }
 
 .recognized-text {
-  font-size: 16px;
+  font-size: 14px;
   color: #667eea;
   font-style: italic;
-  margin-top: 15px;
-  padding: 10px;
+  margin-top: 10px;
+  padding: 8px;
   background: white;
   border-radius: 8px;
 }
@@ -1089,8 +1113,15 @@
     justify-content: center;
   }
   
+  .simulation-area {
+    min-height: calc(100vh - 150px);
+    padding: 20px 15px;
+  }
+  
   .conversation-area {
-    min-height: 300px;
+    min-height: calc(100vh - 400px);
+    max-height: calc(100vh - 300px);
+    flex: 1;
   }
   
   .mobile-speak-btn-fixed {
@@ -1100,8 +1131,8 @@
   }
   
   .handsfree-input-area {
-    padding: 30px 15px;
-    min-height: 120px;
+    padding: 15px;
+    min-height: 60px;
   }
   
   .handsfree-message p {
