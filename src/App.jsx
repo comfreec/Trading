@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { BrowserRouter as Router, Routes, Route, Link, Navigate } from 'react-router-dom'
+import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom'
 import Home from './pages/Home'
 import CustomerSimulator from './pages/CustomerSimulator'
 import ScriptLibrary from './pages/ScriptLibrary'
@@ -37,7 +37,6 @@ function Login({ onLogin }) {
 
   return (
     <div className="login-container">
-      {/* 배경 장식 */}
       <div className="bg-shape shape-1"></div>
       <div className="bg-shape shape-2"></div>
       <div className="bg-shape shape-3"></div>
@@ -75,19 +74,8 @@ function Login({ onLogin }) {
                 type="button" 
                 className="password-toggle"
                 onClick={() => setShowPassword(!showPassword)}
-                title={showPassword ? '비밀번호 숨기기' : '비밀번호 보기'}
               >
-                {showPassword ? (
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
-                    <line x1="1" y1="1" x2="23" y2="23"></line>
-                  </svg>
-                ) : (
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                    <circle cx="12" cy="12" r="3"></circle>
-                  </svg>
-                )}
+                {showPassword ? '🙈' : '👁️'}
               </button>
             </div>
           </div>
@@ -100,30 +88,12 @@ function Login({ onLogin }) {
           )}
 
           <button type="submit" className="login-button" disabled={isLoading}>
-            {isLoading ? (
-              <div className="loading-wrapper">
-                <div className="loading-spinner"></div>
-                <span>로그인 중...</span>
-              </div>
-            ) : (
-              <div className="button-content">
-                <span>로그인</span>
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <line x1="5" y1="12" x2="19" y2="12"></line>
-                  <polyline points="12 5 19 12 12 19"></polyline>
-                </svg>
-              </div>
-            )}
+            {isLoading ? '로그인 중...' : '로그인'}
           </button>
         </form>
 
         <div className="login-footer">
-          <div className="divider">
-            <span></span>
-          </div>
-          <p className="help-text">
-            💡 비밀번호를 잊으셨나요? 관리자에게 문의하세요.
-          </p>
+          <p className="help-text">💡 비밀번호를 잊으셨나요? 관리자에게 문의하세요.</p>
         </div>
       </div>
     </div>
@@ -210,6 +180,7 @@ function App() {
     return <Login onLogin={handleLogin} />
   }
 
+  // 기존 App.jsx 완전히 그대로!
   return (
     <ErrorBoundary>
       <Router>
@@ -241,7 +212,7 @@ function App() {
                 <li><Link to="/quiz" onClick={() => setMenuOpen(false)}>제품 퀴즈</Link></li>
                 <li><Link to="/history" onClick={() => setMenuOpen(false)}>대화 기록</Link></li>
                 <li><Link to="/community" onClick={() => setMenuOpen(false)}>커뮤니티</Link></li>
-                <li><button onClick={handleLogout} style={{background:'none',border:'none',color:'inherit',font:'inherit',cursor:'pointer',padding:'0'}}>로그아웃</button></li>
+                <li><button onClick={handleLogout} className="logout-btn">로그아웃</button></li>
               </ul>
             </div>
           </nav>
