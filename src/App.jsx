@@ -17,7 +17,6 @@ function Login({ onLogin }) {
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(false)
-  const [showPassword, setShowPassword] = useState(false)
 
   const handleSubmit = (e) => {
     e.preventDefault()
@@ -37,64 +36,22 @@ function Login({ onLogin }) {
 
   return (
     <div className="login-container">
-      <div className="bg-shape shape-1"></div>
-      <div className="bg-shape shape-2"></div>
-      <div className="bg-shape shape-3"></div>
-      <div className="bg-gradient"></div>
-
       <div className="login-card">
-        <div className="login-header">
-          <div className="logo-wrapper">
-            <div className="logo-shape">
-              <span className="logo-icon">🎯</span>
-            </div>
-          </div>
-          <h1>코웨이 영업 마스터</h1>
-          <p>영업 실력을 한 단계 높여보세요</p>
-        </div>
-
-        <form className="login-form" onSubmit={handleSubmit}>
-          <div className="input-group">
-            <label htmlFor="password">
-              <span className="label-icon">🔒</span>
-              비밀번호
-            </label>
-            <div className="password-input-wrapper">
-              <span className="input-prefix">🔑</span>
-              <input
-                type={showPassword ? 'text' : 'password'}
-                id="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="비밀번호를 입력하세요"
-                autoComplete="off"
-                autoFocus
-              />
-              <button 
-                type="button" 
-                className="password-toggle"
-                onClick={() => setShowPassword(!showPassword)}
-              >
-                {showPassword ? '🙈' : '👁️'}
-              </button>
-            </div>
-          </div>
-
-          {error && (
-            <div className="error-message">
-              <span className="error-icon">⚠️</span>
-              {error}
-            </div>
-          )}
-
-          <button type="submit" className="login-button" disabled={isLoading}>
+        <h1>🎯 코웨이 영업 마스터</h1>
+        <p>비밀번호를 입력하세요</p>
+        <form onSubmit={handleSubmit}>
+          <input
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder="0070"
+            autoFocus
+          />
+          {error && <p className="error">{error}</p>}
+          <button type="submit" disabled={isLoading}>
             {isLoading ? '로그인 중...' : '로그인'}
           </button>
         </form>
-
-        <div className="login-footer">
-          <p className="help-text">💡 비밀번호를 잊으셨나요? 관리자에게 문의하세요.</p>
-        </div>
       </div>
     </div>
   )
@@ -212,7 +169,7 @@ function App() {
                 <li><Link to="/quiz" onClick={() => setMenuOpen(false)}>제품 퀴즈</Link></li>
                 <li><Link to="/history" onClick={() => setMenuOpen(false)}>대화 기록</Link></li>
                 <li><Link to="/community" onClick={() => setMenuOpen(false)}>커뮤니티</Link></li>
-                <li><button onClick={handleLogout} className="logout-btn">로그아웃</button></li>
+                <li><button onClick={handleLogout} style={{background:'none',border:'none',color:'inherit',font:'inherit',cursor:'pointer',padding:'0'}}>로그아웃</button></li>
               </ul>
             </div>
           </nav>
