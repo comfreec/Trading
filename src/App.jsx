@@ -12,11 +12,12 @@ import MyScripts from './pages/MyScripts'
 import LiveCoach from './pages/LiveCoach'
 import './App.css'
 
-// 로그인 컴포넌트
+// 로그인 컴포넌트 (개선된 버전)
 function Login({ onLogin }) {
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(false)
+  const [showPassword, setShowPassword] = useState(false)
 
   const handleSubmit = (e) => {
     e.preventDefault()
@@ -46,26 +47,39 @@ function Login({ onLogin }) {
         <form className="login-form" onSubmit={handleSubmit}>
           <div className="input-group">
             <label htmlFor="password">비밀번호</label>
-            <input
-              type="password"
-              id="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="비밀번호를 입력하세요"
-              autoComplete="off"
-              autoFocus
-            />
+            <div className="password-input-wrapper">
+              <input
+                type={showPassword ? 'text' : 'password'}
+                id="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="비밀번호를 입력하세요"
+                autoComplete="off"
+                autoFocus
+              />
+              <button 
+                type="button" 
+                className="password-toggle"
+                onClick={() => setShowPassword(!showPassword)}
+              >
+                {showPassword ? '🙈' : '👁️'}
+              </button>
+            </div>
           </div>
 
           {error && <div className="error-message">{error}</div>}
 
           <button type="submit" className="login-button" disabled={isLoading}>
-            {isLoading ? '로그인 중...' : '로그인'}
+            {isLoading ? (
+              <span className="loading-spinner">⏳ 로그인 중...</span>
+            ) : (
+              '로그인'
+            )}
           </button>
         </form>
 
         <div className="login-footer">
-          <p>비밀번호: 0070</p>
+          <p className="help-text">비밀번호를 잊으셨나요? 관리자에게 문의하세요.</p>
         </div>
       </div>
     </div>
