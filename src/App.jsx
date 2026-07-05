@@ -12,7 +12,7 @@ import MyScripts from './pages/MyScripts'
 import LiveCoach from './pages/LiveCoach'
 import './App.css'
 
-// 로그인 컴포넌트 (고급 디자인)
+// 로그인 컴포넌트
 function Login({ onLogin }) {
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
@@ -241,7 +241,7 @@ function App() {
                 <li><Link to="/quiz" onClick={() => setMenuOpen(false)}>제품 퀴즈</Link></li>
                 <li><Link to="/history" onClick={() => setMenuOpen(false)}>대화 기록</Link></li>
                 <li><Link to="/community" onClick={() => setMenuOpen(false)}>커뮤니티</Link></li>
-                <li><button onClick={handleLogout} className="logout-button">로그아웃</button></li>
+                <li><button onClick={handleLogout} style={{background:'none',border:'none',color:'inherit',font:'inherit',cursor:'pointer',padding:'0'}}>로그아웃</button></li>
               </ul>
             </div>
           </nav>
