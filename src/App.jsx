@@ -1,5 +1,5 @@
-import React from 'react'
-import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom'
+import React, { useState, useEffect } from 'react'
+import { BrowserRouter as Router, Routes, Route, Link, Navigate } from 'react-router-dom'
 import Home from './pages/Home'
 import CustomerSimulator from './pages/CustomerSimulator'
 import ScriptLibrary from './pages/ScriptLibrary'
@@ -11,6 +11,66 @@ import ConversationHistory from './pages/ConversationHistory'
 import MyScripts from './pages/MyScripts'
 import LiveCoach from './pages/LiveCoach'
 import './App.css'
+
+// 로그인 컴포넌트
+function Login({ onLogin }) {
+  const [password, setPassword] = useState('')
+  const [error, setError] = useState('')
+  const [isLoading, setIsLoading] = useState(false)
+
+  const handleSubmit = (e) => {
+    e.preventDefault()
+    setIsLoading(true)
+    setError('')
+
+    setTimeout(() => {
+      if (password === '0070') {
+        onLogin()
+      } else {
+        setError('비밀번호가 틀렸습니다. 다시 입력해주세요.')
+        setPassword('')
+      }
+      setIsLoading(false)
+    }, 500)
+  }
+
+  return (
+    <div className="login-container">
+      <div className="login-card">
+        <div className="login-header">
+          <div className="login-icon">🎯</div>
+          <h1>코웨이 영업 마스터</h1>
+          <p>트레이닝 플랫폼</p>
+        </div>
+
+        <form className="login-form" onSubmit={handleSubmit}>
+          <div className="input-group">
+            <label htmlFor="password">비밀번호</label>
+            <input
+              type="password"
+              id="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="비밀번호를 입력하세요"
+              autoComplete="off"
+              autoFocus
+            />
+          </div>
+
+          {error && <div className="error-message">{error}</div>}
+
+          <button type="submit" className="login-button" disabled={isLoading}>
+            {isLoading ? '로그인 중...' : '로그인'}
+          </button>
+        </form>
+
+        <div className="login-footer">
+          <p>비밀번호: 0070</p>
+        </div>
+      </div>
+    </div>
+  )
+}
 
 // 에러 바운더리
 class ErrorBoundary extends React.Component {
@@ -41,10 +101,31 @@ class ErrorBoundary extends React.Component {
 }
 
 function App() {
-  const [menuOpen, setMenuOpen] = React.useState(false)
+  const [menuOpen, setMenuOpen] = useState(false)
+  const [isLoggedIn, setIsLoggedIn] = useState(false)
+
+  // 로컬 스토리지에서 로그인 상태 확인 (자동 로그인)
+  useEffect(() => {
+    const savedLoginState = localStorage.getItem('isLoggedIn')
+    if (savedLoginState === 'true') {
+      setIsLoggedIn(true)
+    }
+  }, [])
+
+  // 로그인 처리
+  const handleLogin = () => {
+    setIsLoggedIn(true)
+    localStorage.setItem('isLoggedIn', 'true')
+  }
+
+  // 로그아웃 처리
+  const handleLogout = () => {
+    setIsLoggedIn(false)
+    localStorage.removeItem('isLoggedIn')
+  }
 
   // 메뉴 외부 클릭 시 닫기
-  React.useEffect(() => {
+  useEffect(() => {
     const handleClickOutside = (e) => {
       if (menuOpen && !e.target.closest('.nav-container')) {
         setMenuOpen(false)
@@ -55,7 +136,7 @@ function App() {
   }, [menuOpen])
 
   // 메뉴 열릴 때 body 스크롤 방지
-  React.useEffect(() => {
+  useEffect(() => {
     if (menuOpen) {
       document.body.style.overflow = 'hidden'
     } else {
@@ -65,6 +146,11 @@ function App() {
       document.body.style.overflow = 'unset'
     }
   }, [menuOpen])
+
+  // 로그인되지 않은 경우 로그인 페이지 표시
+  if (!isLoggedIn) {
+    return <Login onLogin={handleLogin} />
+  }
 
   return (
     <ErrorBoundary>
@@ -97,6 +183,7 @@ function App() {
                 <li><Link to="/quiz" onClick={() => setMenuOpen(false)}>제품 퀴즈</Link></li>
                 <li><Link to="/history" onClick={() => setMenuOpen(false)}>대화 기록</Link></li>
                 <li><Link to="/community" onClick={() => setMenuOpen(false)}>커뮤니티</Link></li>
+                <li><button onClick={handleLogout} className="logout-button">로그아웃</button></li>
               </ul>
             </div>
           </nav>
