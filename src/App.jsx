@@ -9,6 +9,7 @@ import Community from './pages/Community'
 import Admin from './pages/Admin'
 import ConversationHistory from './pages/ConversationHistory'
 import MyScripts from './pages/MyScripts'
+import LiveCoach from './pages/LiveCoach'
 import './App.css'
 
 // 에러 바운더리
@@ -88,6 +89,7 @@ function App() {
               </button>
               <ul className={`nav-menu ${menuOpen ? 'active' : ''}`}>
                 <li><Link to="/" onClick={() => setMenuOpen(false)}>홈</Link></li>
+                <li><Link to="/live-coach" onClick={() => setMenuOpen(false)}>실시간 코칭</Link></li>
                 <li><Link to="/simulator" onClick={() => setMenuOpen(false)}>고객 시뮬레이터</Link></li>
                 <li><Link to="/roleplay" onClick={() => setMenuOpen(false)}>롤플레잉</Link></li>
                 <li><Link to="/scripts" onClick={() => setMenuOpen(false)}>영업 스크립트</Link></li>
@@ -105,6 +107,7 @@ function App() {
           <main className="main-content">
             <Routes>
               <Route path="/" element={<Home />} />
+              <Route path="/live-coach" element={<LiveCoach />} />
               <Route path="/simulator" element={<CustomerSimulator />} />
               <Route path="/roleplay" element={<RolePlay />} />
               <Route path="/scripts" element={<ScriptLibrary />} />

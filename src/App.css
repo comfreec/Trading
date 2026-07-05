@@ -85,15 +85,16 @@ body {
 }
 
 .navbar {
-  background: white;
-  box-shadow: var(--shadow-md);
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  box-shadow: 0 1px 0 0 rgba(0, 0, 0, 0.05), var(--shadow-md);
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   z-index: 100;
-  backdrop-filter: blur(10px);
-  background: rgba(255, 255, 255, 0.95);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.3);
 }
 
 .nav-container {
@@ -109,15 +110,19 @@ body {
 .logo {
   font-size: 1.5rem;
   font-weight: 800;
-  color: var(--primary);
+  background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
   text-decoration: none;
-  transition: all 0.2s ease;
-  letter-spacing: -0.5px;
+  transition: all var(--transition-base);
+  letter-spacing: -1px;
+  position: relative;
 }
 
 .logo:hover {
-  color: var(--primary-dark);
   transform: scale(1.05);
+  filter: brightness(1.1);
 }
 
 .menu-toggle {
@@ -198,24 +203,28 @@ body {
   text-decoration: none;
   color: var(--gray-700);
   font-weight: 600;
-  transition: all 0.2s ease;
+  transition: all var(--transition-base);
   position: relative;
   padding: var(--spacing-xs) 0;
+  letter-spacing: -0.01em;
 }
 
 .nav-menu li a::after {
   content: '';
   position: absolute;
-  bottom: 0;
-  left: 0;
+  bottom: -2px;
+  left: 50%;
   width: 0;
-  height: 2px;
-  background: var(--primary);
-  transition: width 0.3s ease;
+  height: 3px;
+  background: linear-gradient(90deg, var(--primary), var(--secondary));
+  transform: translateX(-50%);
+  transition: width var(--transition-base);
+  border-radius: var(--radius-full);
 }
 
 .nav-menu li a:hover {
   color: var(--primary);
+  transform: translateY(-1px);
 }
 
 .nav-menu li a:hover::after {
